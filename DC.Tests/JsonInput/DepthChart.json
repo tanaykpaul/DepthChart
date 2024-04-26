@@ -1,0 +1,81 @@
+{
+	"Sport": "NFL",
+	"Teams": [
+		{
+			"Name": "Tampa Bay Buccaneers",
+			"Positions": [
+				{
+					"Name": "LWR",
+					"Orders": [
+						{
+							"SeqNumber": 1,
+							"PlayerDetails": {
+								"Name": "Mike Evans",
+								"Number": 13,
+								"Odds": "14/1"
+							}
+						},
+						{
+							"SeqNumber": 2,
+							"PlayerDetails": {
+								"Name": "Jaelon Darden",
+								"Number": 1,
+								"Odds": "21/4"
+							}
+						},
+						{
+							"SeqNumber": 3,
+							"PlayerDetails": {
+								"Name": "Scott Miller",
+								"Number": 10,
+								"Odds": "19/6"
+							}
+						}
+					]
+				},
+				{
+					"Name": "LT",
+					"Orders": [
+						{
+							"SeqNumber": 1,
+							"PlayerDetails": {
+								"Name": "Donovan Smith",
+								"Number": 76,
+								"Odds": "15/2"
+							}
+						},
+						{
+							"SeqNumber": 2,
+							"PlayerDetails": {
+								"Name": "JOSH WELLS",
+								"Number": 72,
+								"Odds": "SF19"
+							}
+						}
+					]
+				},
+				{
+					"Name": "RT",
+					"Orders": [
+						{
+							"SeqNumber": 1,
+							"PlayerDetails": {
+								"Name": "Tristan Wirfs",
+								"Number": 78,
+								"Odds": "20/1"
+							}
+						},
+						{
+							"SeqNumber": 2,
+							"PlayerDetails": {
+								"Name": "JOSH WELLS",
+								"Number": 72,
+								"Odds": "SF19"
+							}
+						}
+					]
+				}
+			]
+		}
+	]
+}
