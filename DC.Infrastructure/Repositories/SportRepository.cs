@@ -1,5 +1,6 @@
 ﻿using DC.Domain.Entities;
 using DC.Domain.Interfaces;
+using DC.Domain.Logging;
 using DC.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 
@@ -8,9 +9,9 @@ namespace DC.Infrastructure.Repositories
     public class SportRepository : ISportRepository
     {
         private readonly DepthChartDbContext _context;
-        private readonly ILogger<SportRepository> _logger;
+        private readonly IAppLogger<SportRepository> _logger;
 
-        public SportRepository(DepthChartDbContext context, ILogger<SportRepository> logger)
+        public SportRepository(DepthChartDbContext context, IAppLogger<SportRepository> logger)
         {
             _context = context;
             _logger = logger;

@@ -1,17 +1,17 @@
 ﻿using DC.Domain.Entities;
 using DC.Domain.Interfaces;
+using DC.Domain.Logging;
 using DC.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
-using System.Xml.Linq;
 
 namespace DC.Infrastructure.Repositories
 {
     public class TeamRepository : ITeamRepository
     {
         private readonly DepthChartDbContext _context;
-        private readonly ILogger<TeamRepository> _logger;
+        private readonly IAppLogger<TeamRepository> _logger;
 
-        public TeamRepository(DepthChartDbContext context, ILogger<TeamRepository> logger)
+        public TeamRepository(DepthChartDbContext context, IAppLogger<TeamRepository> logger)
         {
             _context = context;
             _logger = logger;

@@ -1,19 +1,14 @@
-﻿using System.ComponentModel.DataAnnotations;
-
-namespace DC.Domain.Entities
+﻿namespace DC.Domain.Entities
 {
     public class Position
     {
-        [Required]
         public int PositionId { get; set; }
-        [Required]
-        public string Name { get; set; }
+        public required string Name { get; set; }
 
-        // Foreign key
         public int TeamId { get; set; }
-        public Team Team { get; set; }
+        public Team Team { get; set; } = null!;
 
-        // One-to-many relationship
-        public List<Order> Orders { get; set; }
+        public List<Order> Orders { get; } = [];
+        public List<Team> Teams { get; } = [];
     }
 }

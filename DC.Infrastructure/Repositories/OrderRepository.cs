@@ -1,5 +1,6 @@
 ﻿using DC.Domain.Entities;
 using DC.Domain.Interfaces;
+using DC.Domain.Logging;
 using DC.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 
@@ -8,22 +9,22 @@ namespace DC.Infrastructure.Repositories
     public class OrderRepository : IOrderRepository
     {
         private readonly DepthChartDbContext _context;
-        private readonly ILogger<OrderRepository> _logger;
+        private readonly IAppLogger<OrderRepository> _logger;
 
-        public OrderRepository(DepthChartDbContext context, ILogger<OrderRepository> logger)
+        public OrderRepository(DepthChartDbContext context, IAppLogger<OrderRepository> logger)
         {
             _context = context;
             _logger = logger;
         }
 
-        // Get a specific Order by ID
-        public async Task<Order?> GetByIdAsync(int id)
+        // Get a specific Order by PositionId and PlayerId
+        public async Task<Order?> GetByIdAsync(int positionId, int playerId)
         {
-            _logger.LogInformation($"Retrieving order with ID: {id}");
+            _logger.LogInformation($"Retrieving order with PositionId as {positionId} and PlayerId as {playerId}");
             return await _context.Orders
-                                 .Include(o => o.Player) // Include the Player associated with the Order
-                                 .Include(o => o.Position) // Include the Position associated with the Order
-                                 .FirstOrDefaultAsync(o => o.OrderId == id);
+                                .Include(o => o.Player)
+                                .Include(o => o.Position)
+                                .FirstOrDefaultAsync(o => o.PositionId == positionId && o.PlayerId == playerId);
         }
 
         // Get all Orders
@@ -31,8 +32,8 @@ namespace DC.Infrastructure.Repositories
         {
             _logger.LogInformation("Retrieving all orders");
             return await _context.Orders
-                                 .Include(o => o.Player) // Include the Players associated with the Orders
-                                 .Include(o => o.Position) // Include the Positions associated with the Orders
+                                 .Include(o => o.Player)
+                                 .Include(o => o.Position)
                                  .ToListAsync();
         }
 
@@ -46,18 +47,17 @@ namespace DC.Infrastructure.Repositories
         // Update an existing Order
         public async Task UpdateAsync(Order order)
         {
-            _logger.LogInformation($"Updating order with ID: {order.OrderId}");
+            _logger.LogInformation($"Updating order with PositionId as {order.PositionId} and PlayerId as {order.PlayerId}");
             _context.Orders.Update(order);
         }
 
-        // Delete an Order by ID
-        public async Task DeleteAsync(int id)
+        // Delete an Order by PositionId and PlayerId
+        public void Delete(int positionId, int playerId)
         {
-            _logger.LogInformation($"Deleting order with ID: {id}");
-            var order = await _context.Orders.FindAsync(id);
+            _logger.LogInformation($"Deleting order with PositionId as {positionId} and PlayerId as {playerId}");
+            var order = _context.Orders.Find(positionId, playerId);
             if (order != null)
             {
-                _logger.LogWarning($"Order with ID: {id} not found for deletion");
                 _context.Orders.Remove(order);
             }
         }
@@ -76,9 +76,8 @@ namespace DC.Infrastructure.Repositories
         /// <param name="playerId"></param>
         /// <param name="depthPosition"></param>
         /// <returns></returns>
-        public async Task<int?> AddPlayerToDepthChart(int positionId, int playerId, int? depthPosition)
+        public async Task AddPlayerToDepthChart(int positionId, int playerId, int? depthPosition)
         {
-            int? newOrderId = null;
             // Check positionId and playerId are valid
             if (_context.Positions.FindAsync(positionId).Result != null && _context.Players.FindAsync(playerId).Result != null)
             {
@@ -99,10 +98,12 @@ namespace DC.Infrastructure.Repositories
                 }
 
                 // Create a new Order item
-                var order = new Order();
-                order.PositionId = positionId;
-                order.PlayerId = playerId;
-                order.SeqNumber = depthPosition.Value;
+                var order = new Order
+                {
+                    PositionId = positionId,
+                    PlayerId = playerId,
+                    SeqNumber = depthPosition.Value
+                };
 
                 // Business Rule 2: If depthPosition is occupied by another player,
                 // The adding player will get the priority                
@@ -114,10 +115,7 @@ namespace DC.Infrastructure.Repositories
                 }
 
                 await AddAsync(order);
-                newOrderId = order.OrderId;
             }
-
-            return newOrderId;
         }
 
         /// <summary>
@@ -135,22 +133,6 @@ namespace DC.Infrastructure.Repositories
         public Task<Player>? GetBackups(int positionId, int playerId)
         {
             throw new NotImplementedException();
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="playerId"></param>
-        /// <param name="positionId"></param>
-        /// <returns></returns>
-        public async Task<(Order?, bool)> GetByPlayerIdAndPositionIdAsync(int playerId, int positionId)
-        {
-            if (_context.Positions.FindAsync(positionId).Result != null && _context.Players.FindAsync(playerId).Result != null)
-            {
-                return (await _context.Orders.Where(x => x.PlayerId == playerId && x.PositionId == positionId).FirstOrDefaultAsync(), true);
-            }
-
-            return (null, false);
         }
     }
 }

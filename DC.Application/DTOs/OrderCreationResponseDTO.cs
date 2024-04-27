@@ -2,7 +2,6 @@
 {
     public class OrderCreationResponseDTO
     {
-        public int OrderId { get; set; }
         public int PositionId { get; set; }
         public int PlayerId { get; set; }
     }

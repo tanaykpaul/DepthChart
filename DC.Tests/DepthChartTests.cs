@@ -1,5 +1,5 @@
 ﻿using DC.Domain.Entities;
-using DC.Domain.Interfaces;
+using DC.Domain.Logging;
 using DC.Infrastructure.Data;
 using DC.Infrastructure.Repositories;
 using Microsoft.EntityFrameworkCore;
@@ -16,11 +16,11 @@ namespace DC.Tests
         private PlayerRepository _playerRepository;
         private PositionRepository _positionRepository;
         private OrderRepository _orderRepository;
-        private Mock<ILogger<SportRepository>> _mockSportLogger;
-        private Mock<ILogger<TeamRepository>> _mockTeamLogger;
-        private Mock<ILogger<PlayerRepository>> _mockPlayerLogger;
-        private Mock<ILogger<PositionRepository>> _mockPositionLogger;
-        private Mock<ILogger<OrderRepository>> _mockOrderLogger;
+        private Mock<IAppLogger<SportRepository>> _mockSportLogger;
+        private Mock<IAppLogger<TeamRepository>> _mockTeamLogger;
+        private Mock<IAppLogger<PlayerRepository>> _mockPlayerLogger;
+        private Mock<IAppLogger<PositionRepository>> _mockPositionLogger;
+        private Mock<IAppLogger<OrderRepository>> _mockOrderLogger;
 
         [TestInitialize]
         public void Setup()
@@ -39,11 +39,11 @@ namespace DC.Tests
         private async Task SetupInitialData()
         {
             // Initialize repositories and mocked loggers
-            _mockSportLogger = new Mock<ILogger<SportRepository>>();
-            _mockTeamLogger = new Mock<ILogger<TeamRepository>>();
-            _mockPlayerLogger = new Mock<ILogger<PlayerRepository>>();
-            _mockPositionLogger = new Mock<ILogger<PositionRepository>>();
-            _mockOrderLogger = new Mock<ILogger<OrderRepository>>();
+            _mockSportLogger = new Mock<IAppLogger<SportRepository>>();
+            _mockTeamLogger = new Mock<IAppLogger<TeamRepository>>();
+            _mockPlayerLogger = new Mock<IAppLogger<PlayerRepository>>();
+            _mockPositionLogger = new Mock<IAppLogger<PositionRepository>>();
+            _mockOrderLogger = new Mock<IAppLogger<OrderRepository>>();
 
             _sportRepository = new SportRepository(_dbContext, _mockSportLogger.Object);
             _teamRepository = new TeamRepository(_dbContext, _mockTeamLogger.Object);
@@ -62,7 +62,7 @@ namespace DC.Tests
             await _teamRepository.SaveChangesAsync();
 
             // Setup a player
-            var player = new Player { Name = "Player 1", TeamId = team.TeamId };
+            var player = new Player { Name = "Player 1", Number = 1, TeamId = team.TeamId };
             await _playerRepository.AddAsync(player);
             await _playerRepository.SaveChangesAsync();
 
@@ -73,10 +73,8 @@ namespace DC.Tests
 
             // Setup orders for player and position
             var order1 = new Order { SeqNumber = 1, PlayerId = player.PlayerId, PositionId = position.PositionId };
-            var order2 = new Order { SeqNumber = 2, PlayerId = player.PlayerId, PositionId = position.PositionId };
-
+            
             await _orderRepository.AddAsync(order1);
-            await _orderRepository.AddAsync(order2);
             await _orderRepository.SaveChangesAsync();
         }
 
@@ -155,15 +153,11 @@ namespace DC.Tests
 
             // Retrieve all orders
             var orders = await _orderRepository.GetAllAsync();
-            Assert.AreEqual(2, orders.Count); // Expect two orders
+            Assert.AreEqual(1, orders.Count); // Expect two orders
 
             // Retrieve the first order and check its name
-            var order1 = await _orderRepository.GetByIdAsync(orders[0].OrderId);
-            Assert.AreEqual(1, order1.SeqNumber);
-
-            // Retrieve the second order and check its name
-            var order2 = await _orderRepository.GetByIdAsync(orders[1].OrderId);
-            Assert.AreEqual(2, order2.SeqNumber);
+            var order = await _orderRepository.GetByIdAsync(orders[0].PositionId, orders[0].PlayerId);
+            Assert.AreEqual(1, order.SeqNumber);
 
             await _dbContext.DisposeAsync();
         }

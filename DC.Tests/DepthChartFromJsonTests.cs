@@ -1,6 +1,6 @@
 ﻿using DC.Application.DTOs;
 using DC.Domain.Entities;
-using DC.Domain.Interfaces;
+using DC.Domain.Logging;
 using DC.Infrastructure.Data;
 using DC.Infrastructure.Repositories;
 using Microsoft.EntityFrameworkCore;
@@ -19,11 +19,11 @@ namespace DC.Tests
         private PlayerRepository _playerRepository;
         private PositionRepository _positionRepository;
         private OrderRepository _orderRepository;
-        private Mock<ILogger<SportRepository>> _mockSportLogger;
-        private Mock<ILogger<TeamRepository>> _mockTeamLogger;
-        private Mock<ILogger<PlayerRepository>> _mockPlayerLogger;
-        private Mock<ILogger<PositionRepository>> _mockPositionLogger;
-        private Mock<ILogger<OrderRepository>> _mockOrderLogger;
+        private Mock<IAppLogger<SportRepository>> _mockSportLogger;
+        private Mock<IAppLogger<TeamRepository>> _mockTeamLogger;
+        private Mock<IAppLogger<PlayerRepository>> _mockPlayerLogger;
+        private Mock<IAppLogger<PositionRepository>> _mockPositionLogger;
+        private Mock<IAppLogger<OrderRepository>> _mockOrderLogger;
 
         [TestInitialize]
         public void Setup()
@@ -42,11 +42,11 @@ namespace DC.Tests
         private async Task SetupInitialData()
         {
             // Initialize repositories and mocked loggers
-            _mockSportLogger = new Mock<ILogger<SportRepository>>();
-            _mockTeamLogger = new Mock<ILogger<TeamRepository>>();
-            _mockPlayerLogger = new Mock<ILogger<PlayerRepository>>();
-            _mockPositionLogger = new Mock<ILogger<PositionRepository>>();
-            _mockOrderLogger = new Mock<ILogger<OrderRepository>>();
+            _mockSportLogger = new Mock<IAppLogger<SportRepository>>();
+            _mockTeamLogger = new Mock<IAppLogger<TeamRepository>>();
+            _mockPlayerLogger = new Mock<IAppLogger<PlayerRepository>>();
+            _mockPositionLogger = new Mock<IAppLogger<PositionRepository>>();
+            _mockOrderLogger = new Mock<IAppLogger<OrderRepository>>();
 
             _sportRepository = new SportRepository(_dbContext, _mockSportLogger.Object);
             _teamRepository = new TeamRepository(_dbContext, _mockTeamLogger.Object);
@@ -240,19 +240,19 @@ namespace DC.Tests
             Assert.AreEqual(7, orders.Count); // Expect two orders
 
             // Retrieve order and check its name
-            var order1 = await _orderRepository.GetByIdAsync(orders[0].OrderId);
+            var order1 = await _orderRepository.GetByIdAsync(orders[0].PositionId, orders[0].PlayerId);
             Assert.AreEqual(1, order1.SeqNumber);
-            var order2 = await _orderRepository.GetByIdAsync(orders[1].OrderId);
+            var order2 = await _orderRepository.GetByIdAsync(orders[1].PositionId, orders[1].PlayerId);
             Assert.AreEqual(2, order2.SeqNumber);
-            var order3 = await _orderRepository.GetByIdAsync(orders[2].OrderId);
+            var order3 = await _orderRepository.GetByIdAsync(orders[2].PositionId, orders[2].PlayerId);
             Assert.AreEqual(3, order3.SeqNumber);
-            var order4 = await _orderRepository.GetByIdAsync(orders[3].OrderId);
+            var order4 = await _orderRepository.GetByIdAsync(orders[3].PositionId, orders[3].PlayerId);
             Assert.AreEqual(1, order4.SeqNumber);
-            var order5 = await _orderRepository.GetByIdAsync(orders[4].OrderId);
+            var order5 = await _orderRepository.GetByIdAsync(orders[4].PositionId, orders[4].PlayerId);
             Assert.AreEqual(2, order5.SeqNumber);
-            var order6 = await _orderRepository.GetByIdAsync(orders[5].OrderId);
+            var order6 = await _orderRepository.GetByIdAsync(orders[5].PositionId, orders[5].PlayerId);
             Assert.AreEqual(1, order6.SeqNumber);
-            var order7 = await _orderRepository.GetByIdAsync(orders[6].OrderId);
+            var order7 = await _orderRepository.GetByIdAsync(orders[6].PositionId, orders[6].PlayerId);
             Assert.AreEqual(2, order7.SeqNumber);
 
             await _dbContext.DisposeAsync();

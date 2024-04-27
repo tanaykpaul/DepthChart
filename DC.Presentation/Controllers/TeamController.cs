@@ -1,6 +1,7 @@
 ﻿using DC.Application.DTOs;
 using DC.Domain.Entities;
 using DC.Domain.Interfaces;
+using DC.Domain.Logging;
 using Microsoft.AspNetCore.Mvc;
 
 namespace DC.Presentation.Controllers
@@ -10,10 +11,12 @@ namespace DC.Presentation.Controllers
     public class TeamController : ControllerBase
     {
         private readonly ITeamRepository _teamRepository;
+        private readonly IAppLogger<TeamController> _logger;
 
-        public TeamController(ITeamRepository teamRepository)
+        public TeamController(ITeamRepository teamRepository, IAppLogger<TeamController> logger)
         {
             _teamRepository = teamRepository;
+            _logger = logger;
         }
 
         // Get all teams
@@ -49,10 +52,12 @@ namespace DC.Presentation.Controllers
             {
                 return BadRequest($"There is a team exists with the team name {teamDto.Name} under the sport Id {teamDto.SportId}");
             }
-            
-            var team = new Team();
-            team.Name = teamDto.Name;
-            team.SportId = teamDto.SportId;
+
+            var team = new Team
+            {
+                Name = teamDto.Name,
+                SportId = teamDto.SportId
+            };
 
             await _teamRepository.AddAsync(team);
             await _teamRepository.SaveChangesAsync();

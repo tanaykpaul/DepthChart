@@ -1,5 +1,6 @@
 ﻿using DC.Domain.Entities;
 using DC.Domain.Interfaces;
+using DC.Domain.Logging;
 using DC.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 
@@ -8,9 +9,9 @@ namespace DC.Infrastructure.Repositories
     public class PositionRepository : IPositionRepository
     {
         private readonly DepthChartDbContext _context;
-        private readonly ILogger<PositionRepository> _logger;
+        private readonly IAppLogger<PositionRepository> _logger;
 
-        public PositionRepository(DepthChartDbContext context, ILogger<PositionRepository> logger)
+        public PositionRepository(DepthChartDbContext context, IAppLogger<PositionRepository> logger)
         {
             _context = context;
             _logger = logger;

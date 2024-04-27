@@ -1,5 +1,6 @@
 ﻿using DC.Domain.Entities;
 using DC.Domain.Interfaces;
+using DC.Domain.Logging;
 using DC.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 
@@ -8,9 +9,9 @@ namespace DC.Infrastructure.Repositories
     public class PlayerRepository : IPlayerRepository
     {
         private readonly DepthChartDbContext _context;
-        private readonly ILogger<PlayerRepository> _logger;
+        private readonly IAppLogger<PlayerRepository> _logger;
 
-        public PlayerRepository(DepthChartDbContext context, ILogger<PlayerRepository> logger)
+        public PlayerRepository(DepthChartDbContext context, IAppLogger<PlayerRepository> logger)
         {
             _context = context;
             _logger = logger;

@@ -40,6 +40,9 @@ namespace DC.Infrastructure.Data
                 .HasForeignKey(p => p.TeamId);
 
             modelBuilder.Entity<Order>()
+            .HasKey(o => new { o.PlayerId, o.PositionId });
+
+            modelBuilder.Entity<Order>()
                 .HasOne(o => o.Position)
                 .WithMany(p => p.Orders)
                 .HasForeignKey(o => o.PositionId);
