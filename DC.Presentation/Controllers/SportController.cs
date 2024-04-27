@@ -1,6 +1,7 @@
 ﻿using DC.Application.DTOs;
 using DC.Domain.Entities;
 using DC.Domain.Interfaces;
+using DC.Domain.Logging;
 using Microsoft.AspNetCore.Mvc;
 
 namespace DC.Presentation.Controllers
@@ -10,10 +11,12 @@ namespace DC.Presentation.Controllers
     public class SportController : ControllerBase
     {
         private readonly ISportRepository _sportRepository;
+        private readonly IAppLogger _logger;
 
-        public SportController(ISportRepository sportRepository)
+        public SportController(ISportRepository sportRepository, IAppLogger logger)
         {
             _sportRepository = sportRepository;
+            _logger = logger;
         }
 
         // Get all sports
@@ -46,9 +49,11 @@ namespace DC.Presentation.Controllers
                 return BadRequest($"There is a sport exists with the name {sportDto.Name}");
             }
 
-            var sport = new Sport();
-            sport.Name = sportDto.Name;
-            
+            var sport = new Sport
+            {
+                Name = sportDto.Name
+            };
+
             await _sportRepository.AddAsync(sport);
             await _sportRepository.SaveChangesAsync();
             return CreatedAtAction(nameof(GetSportById), new { id = sport.SportId }, new SportCreationResponseDTO { SportId = sport.SportId});

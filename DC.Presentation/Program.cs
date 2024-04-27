@@ -1,5 +1,6 @@
 using DC.Application.Mapping;
-using domainInterfaces = DC.Domain.Interfaces;
+using DC.Domain.Interfaces;
+using DC.Domain.Logging;
 using DC.Infrastructure.Data;
 using DC.Infrastructure.Logging;
 using DC.Infrastructure.Repositories;
@@ -27,17 +28,12 @@ builder.Services.AddDbContext<DepthChartDbContext>(options =>
 });
 
 // Register repositories
-builder.Services.AddScoped<domainInterfaces.ISportRepository, SportRepository>();
-builder.Services.AddScoped<domainInterfaces.ITeamRepository, TeamRepository>();
-builder.Services.AddScoped<domainInterfaces.IPlayerRepository, PlayerRepository>();
-builder.Services.AddScoped<domainInterfaces.IPositionRepository, PositionRepository>();
-builder.Services.AddScoped<domainInterfaces.IOrderRepository, OrderRepository>();
-
-builder.Services.AddScoped<domainInterfaces.ILogger<SportController>, AppLogger<SportController>>();
-builder.Services.AddScoped<domainInterfaces.ILogger<TeamController>, AppLogger<TeamController>>();
-builder.Services.AddScoped<domainInterfaces.ILogger<PlayerController>, AppLogger<PlayerController>>();
-builder.Services.AddScoped<domainInterfaces.ILogger<PositionController>, AppLogger<PositionController>>();
-builder.Services.AddScoped<domainInterfaces.ILogger<OrderController>, AppLogger<OrderController>>();
+builder.Services.AddScoped<IAppLogger, AppLogger>();
+builder.Services.AddScoped<ISportRepository, SportRepository>();
+builder.Services.AddScoped<ITeamRepository, TeamRepository>();
+builder.Services.AddScoped<IPlayerRepository, PlayerRepository>();
+builder.Services.AddScoped<IPositionRepository, PositionRepository>();
+builder.Services.AddScoped<IOrderRepository, OrderRepository>();
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();

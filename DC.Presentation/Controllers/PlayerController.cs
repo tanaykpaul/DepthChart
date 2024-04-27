@@ -1,6 +1,7 @@
 ﻿using DC.Application.DTOs;
 using DC.Domain.Entities;
 using DC.Domain.Interfaces;
+using DC.Domain.Logging;
 using Microsoft.AspNetCore.Mvc;
 
 namespace DC.Presentation.Controllers
@@ -10,9 +11,9 @@ namespace DC.Presentation.Controllers
     public class PlayerController : ControllerBase
     {
         private readonly IPlayerRepository _playerRepository;
-        private readonly Domain.Interfaces.ILogger<PlayerController> _logger;
+        private readonly IAppLogger _logger;
 
-        public PlayerController(IPlayerRepository playerRepository, Domain.Interfaces.ILogger<PlayerController> logger)
+        public PlayerController(IPlayerRepository playerRepository, IAppLogger logger)
         {
             _playerRepository = playerRepository;
             _logger = logger;
@@ -52,11 +53,13 @@ namespace DC.Presentation.Controllers
                 return BadRequest($"There is a player exists with the player number {playerDto.PlayerNumber} under the team Id = {playerDto.TeamId}");
             }
 
-            var player = new Player();
-            player.Number = playerDto.PlayerNumber;
-            player.Name = playerDto.Name;
-            player.Odds = playerDto.Odds;
-            player.TeamId = playerDto.TeamId;
+            var player = new Player
+            {
+                Number = playerDto.PlayerNumber,
+                Name = playerDto.Name,
+                Odds = playerDto.Odds,
+                TeamId = playerDto.TeamId
+            };
 
             await _playerRepository.AddAsync(player);
             await _playerRepository.SaveChangesAsync();

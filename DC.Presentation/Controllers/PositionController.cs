@@ -1,6 +1,7 @@
 ﻿using DC.Application.DTOs;
 using DC.Domain.Entities;
 using DC.Domain.Interfaces;
+using DC.Domain.Logging;
 using DC.Infrastructure.Repositories;
 using Microsoft.AspNetCore.Mvc;
 
@@ -11,10 +12,12 @@ namespace DC.Presentation.Controllers
     public class PositionController : ControllerBase
     {
         private readonly IPositionRepository _positionRepository;
+        private readonly IAppLogger _logger;
 
-        public PositionController(IPositionRepository positionRepository)
+        public PositionController(IPositionRepository positionRepository, IAppLogger logger)
         {
             _positionRepository = positionRepository;
+            _logger = logger;
         }
 
         // Get all positions
@@ -51,9 +54,11 @@ namespace DC.Presentation.Controllers
                 return BadRequest($"There is a player exists with the player number {positionItem.Item1.Name} under the team Id = {positionItem.Item1.TeamId}");
             }
 
-            var position = new Position();
-            position.Name = positionDto.Name;
-            position.TeamId = positionDto.TeamId;
+            var position = new Position
+            {
+                Name = positionDto.Name,
+                TeamId = positionDto.TeamId
+            };
 
             await _positionRepository.AddAsync(position);
             await _positionRepository.SaveChangesAsync();
