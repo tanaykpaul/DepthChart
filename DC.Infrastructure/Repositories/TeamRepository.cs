@@ -9,9 +9,9 @@ namespace DC.Infrastructure.Repositories
     public class TeamRepository : ITeamRepository
     {
         private readonly DepthChartDbContext _context;
-        private readonly IAppLogger<TeamRepository> _logger;
+        private readonly IAppLogger _logger;
 
-        public TeamRepository(DepthChartDbContext context, IAppLogger<TeamRepository> logger)
+        public TeamRepository(DepthChartDbContext context, IAppLogger logger)
         {
             _context = context;
             _logger = logger;

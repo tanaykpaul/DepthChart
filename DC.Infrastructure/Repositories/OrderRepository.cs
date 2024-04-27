@@ -9,9 +9,9 @@ namespace DC.Infrastructure.Repositories
     public class OrderRepository : IOrderRepository
     {
         private readonly DepthChartDbContext _context;
-        private readonly IAppLogger<OrderRepository> _logger;
+        private readonly IAppLogger _logger;
 
-        public OrderRepository(DepthChartDbContext context, IAppLogger<OrderRepository> logger)
+        public OrderRepository(DepthChartDbContext context, IAppLogger logger)
         {
             _context = context;
             _logger = logger;

@@ -11,9 +11,9 @@ namespace DC.Presentation.Controllers
     public class TeamController : ControllerBase
     {
         private readonly ITeamRepository _teamRepository;
-        private readonly IAppLogger<TeamController> _logger;
+        private readonly IAppLogger _logger;
 
-        public TeamController(ITeamRepository teamRepository, IAppLogger<TeamController> logger)
+        public TeamController(ITeamRepository teamRepository, IAppLogger logger)
         {
             _teamRepository = teamRepository;
             _logger = logger;

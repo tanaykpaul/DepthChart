@@ -11,9 +11,9 @@ namespace DC.Presentation.Controllers
     public class PlayerController : ControllerBase
     {
         private readonly IPlayerRepository _playerRepository;
-        private readonly IAppLogger<PlayerController> _logger;
+        private readonly IAppLogger _logger;
 
-        public PlayerController(IPlayerRepository playerRepository, IAppLogger<PlayerController> logger)
+        public PlayerController(IPlayerRepository playerRepository, IAppLogger logger)
         {
             _playerRepository = playerRepository;
             _logger = logger;

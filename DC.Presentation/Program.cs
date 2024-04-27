@@ -28,13 +28,12 @@ builder.Services.AddDbContext<DepthChartDbContext>(options =>
 });
 
 // Register repositories
+builder.Services.AddScoped<IAppLogger, AppLogger>();
 builder.Services.AddScoped<ISportRepository, SportRepository>();
-//builder.Services.AddScoped<ITeamRepository, TeamRepository>();
-//builder.Services.AddScoped<IPlayerRepository, PlayerRepository>();
-//builder.Services.AddScoped<IPositionRepository, PositionRepository>();
-//builder.Services.AddScoped<IOrderRepository, OrderRepository>();
-
-//builder.Services.AddScoped<IAppLogger<SportController>, AppLogger<SportController>>();
+builder.Services.AddScoped<ITeamRepository, TeamRepository>();
+builder.Services.AddScoped<IPlayerRepository, PlayerRepository>();
+builder.Services.AddScoped<IPositionRepository, PositionRepository>();
+builder.Services.AddScoped<IOrderRepository, OrderRepository>();
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();

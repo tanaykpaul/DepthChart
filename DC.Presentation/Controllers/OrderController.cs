@@ -11,9 +11,9 @@ namespace DC.Presentation.Controllers
     public class OrderController : ControllerBase
     {
         private readonly IOrderRepository _orderRepository;
-        private readonly IAppLogger<OrderController> _logger;
+        private readonly IAppLogger _logger;
 
-        public OrderController(IOrderRepository orderRepository, IAppLogger<OrderController> logger)
+        public OrderController(IOrderRepository orderRepository, IAppLogger logger)
         {
             _orderRepository = orderRepository;
             _logger = logger;

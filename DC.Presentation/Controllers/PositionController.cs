@@ -12,9 +12,9 @@ namespace DC.Presentation.Controllers
     public class PositionController : ControllerBase
     {
         private readonly IPositionRepository _positionRepository;
-        private readonly IAppLogger<PositionController> _logger;
+        private readonly IAppLogger _logger;
 
-        public PositionController(IPositionRepository positionRepository, IAppLogger<PositionController> logger)
+        public PositionController(IPositionRepository positionRepository, IAppLogger logger)
         {
             _positionRepository = positionRepository;
             _logger = logger;

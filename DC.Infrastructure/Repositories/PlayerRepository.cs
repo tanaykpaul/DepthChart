@@ -9,9 +9,9 @@ namespace DC.Infrastructure.Repositories
     public class PlayerRepository : IPlayerRepository
     {
         private readonly DepthChartDbContext _context;
-        private readonly IAppLogger<PlayerRepository> _logger;
+        private readonly IAppLogger _logger;
 
-        public PlayerRepository(DepthChartDbContext context, IAppLogger<PlayerRepository> logger)
+        public PlayerRepository(DepthChartDbContext context, IAppLogger logger)
         {
             _context = context;
             _logger = logger;

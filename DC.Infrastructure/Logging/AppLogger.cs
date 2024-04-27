@@ -3,13 +3,13 @@ using Microsoft.Extensions.Logging;
 
 namespace DC.Infrastructure.Logging
 {
-    public class AppLogger<T> : IAppLogger<T>
+    public class AppLogger : IAppLogger
     {
-        private readonly ILogger<T> _logger;
+        private readonly ILogger<AppLogger> _logger;
 
-        public AppLogger(ILoggerFactory loggerFactory)
+        public AppLogger(ILogger<AppLogger> logger)
         {
-            _logger = loggerFactory.CreateLogger<T>();
+            _logger = logger;
         }
 
         public void LogInformation(string message, params object[] args)

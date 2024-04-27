@@ -16,11 +16,11 @@ namespace DC.Tests
         private PlayerRepository _playerRepository;
         private PositionRepository _positionRepository;
         private OrderRepository _orderRepository;
-        private Mock<IAppLogger<SportRepository>> _mockSportLogger;
-        private Mock<IAppLogger<TeamRepository>> _mockTeamLogger;
-        private Mock<IAppLogger<PlayerRepository>> _mockPlayerLogger;
-        private Mock<IAppLogger<PositionRepository>> _mockPositionLogger;
-        private Mock<IAppLogger<OrderRepository>> _mockOrderLogger;
+        private Mock<IAppLogger> _mockSportLogger;
+        private Mock<IAppLogger> _mockTeamLogger;
+        private Mock<IAppLogger> _mockPlayerLogger;
+        private Mock<IAppLogger> _mockPositionLogger;
+        private Mock<IAppLogger> _mockOrderLogger;
 
         [TestInitialize]
         public void Setup()
@@ -39,11 +39,11 @@ namespace DC.Tests
         private async Task SetupInitialData()
         {
             // Initialize repositories and mocked loggers
-            _mockSportLogger = new Mock<IAppLogger<SportRepository>>();
-            _mockTeamLogger = new Mock<IAppLogger<TeamRepository>>();
-            _mockPlayerLogger = new Mock<IAppLogger<PlayerRepository>>();
-            _mockPositionLogger = new Mock<IAppLogger<PositionRepository>>();
-            _mockOrderLogger = new Mock<IAppLogger<OrderRepository>>();
+            _mockSportLogger = new Mock<IAppLogger>();
+            _mockTeamLogger = new Mock<IAppLogger>();
+            _mockPlayerLogger = new Mock<IAppLogger>();
+            _mockPositionLogger = new Mock<IAppLogger>();
+            _mockOrderLogger = new Mock<IAppLogger>();
 
             _sportRepository = new SportRepository(_dbContext, _mockSportLogger.Object);
             _teamRepository = new TeamRepository(_dbContext, _mockTeamLogger.Object);

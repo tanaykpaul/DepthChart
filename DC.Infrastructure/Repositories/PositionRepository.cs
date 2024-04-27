@@ -9,9 +9,9 @@ namespace DC.Infrastructure.Repositories
     public class PositionRepository : IPositionRepository
     {
         private readonly DepthChartDbContext _context;
-        private readonly IAppLogger<PositionRepository> _logger;
+        private readonly IAppLogger _logger;
 
-        public PositionRepository(DepthChartDbContext context, IAppLogger<PositionRepository> logger)
+        public PositionRepository(DepthChartDbContext context, IAppLogger logger)
         {
             _context = context;
             _logger = logger;

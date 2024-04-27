@@ -9,9 +9,9 @@ namespace DC.Infrastructure.Repositories
     public class SportRepository : ISportRepository
     {
         private readonly DepthChartDbContext _context;
-        private readonly IAppLogger<SportRepository> _logger;
+        private readonly IAppLogger _logger;
 
-        public SportRepository(DepthChartDbContext context, IAppLogger<SportRepository> logger)
+        public SportRepository(DepthChartDbContext context, IAppLogger logger)
         {
             _context = context;
             _logger = logger;

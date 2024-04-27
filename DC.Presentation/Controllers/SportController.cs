@@ -11,9 +11,9 @@ namespace DC.Presentation.Controllers
     public class SportController : ControllerBase
     {
         private readonly ISportRepository _sportRepository;
-        private readonly IAppLogger<SportController> _logger;
+        private readonly IAppLogger _logger;
 
-        public SportController(ISportRepository sportRepository, IAppLogger<SportController> logger)
+        public SportController(ISportRepository sportRepository, IAppLogger logger)
         {
             _sportRepository = sportRepository;
             _logger = logger;
