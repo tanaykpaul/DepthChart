@@ -188,10 +188,20 @@ namespace DC.Presentation.Controllers
 
         // Add a player for a position into the depth chart (Use Case 1)
         [HttpPost("addPlayerToDepthChart")]
-        public async Task<ActionResult<OrderCreationResponseDTO>> AddOrderUseCase1([FromBody] AddPlayerToDepthChartDTO orderDto)
+        public async Task<ActionResult<OrderCreationResponseDTO>> AddPlayerToDepthChart([FromBody] AddPlayerToDepthChartDTO orderDto)
         {
-            await _unitOfWork.OrderRepository.AddPlayerToDepthChart(orderDto.PositionName, orderDto.PlayerNumber, orderDto.DepthPosition);
-            await _unitOfWork.OrderRepository.SaveChangesAsync();
+            await _unitOfWork.AddPlayerToDepthChart(orderDto.PositionName, orderDto.PlayerNumber, orderDto.DepthPosition);
+            await _unitOfWork.SaveChangesAsync();
+            return CreatedAtAction(nameof(GetOrderById), new { positionId = 1, playerId = 1 },
+                new OrderCreationResponseDTO { PositionId = 1, PlayerId = 1 });
+        }
+
+        // Remove a player from the depth chart for a position (Use Case 2)
+        [HttpPost("removePlayerFromDepthChart")]
+        public async Task<ActionResult<OrderCreationResponseDTO>> RemovePlayerFromDepthChart([FromBody] RemovePlayerFromDepthChartDTO orderDto)
+        {
+            await _unitOfWork.RemovePlayerFromDepthChart(orderDto.PositionName, orderDto.PlayerNumber);
+            await _unitOfWork.SaveChangesAsync();
             return CreatedAtAction(nameof(GetOrderById), new { positionId = 1, playerId = 1 },
                 new OrderCreationResponseDTO { PositionId = 1, PlayerId = 1 });
         }

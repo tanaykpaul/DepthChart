@@ -82,7 +82,7 @@ namespace DC.Presentation.Controllers
                 return NotFound();
             }
 
-            _orderRepository.Delete(positionId, playerId);
+            _orderRepository.RemovePlayerFromDepthChart(positionId, playerId);
             await _orderRepository.SaveChangesAsync();
             return NoContent();
         }
