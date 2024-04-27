@@ -4,8 +4,10 @@ using DC.Domain.Logging;
 using DC.Infrastructure.Data;
 using DC.Infrastructure.Logging;
 using DC.Infrastructure.Repositories;
+using DC.Infrastructure.Services;
 using DC.Presentation.Controllers;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -34,6 +36,9 @@ builder.Services.AddScoped<ITeamRepository, TeamRepository>();
 builder.Services.AddScoped<IPlayerRepository, PlayerRepository>();
 builder.Services.AddScoped<IPositionRepository, PositionRepository>();
 builder.Services.AddScoped<IOrderRepository, OrderRepository>();
+
+// Register the unit of work
+builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();

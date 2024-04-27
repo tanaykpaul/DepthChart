@@ -5,7 +5,6 @@ using DC.Infrastructure.Data;
 using DC.Infrastructure.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Moq;
-using System.ComponentModel.DataAnnotations;
 using System.Text.Json;
 
 namespace DC.Tests
