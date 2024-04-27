@@ -2,6 +2,7 @@
 using DC.Domain.Interfaces;
 using DC.Domain.Logging;
 using DC.Infrastructure.Data;
+using DC.Infrastructure.Services;
 using Microsoft.EntityFrameworkCore;
 
 namespace DC.Infrastructure.Repositories
@@ -70,52 +71,87 @@ namespace DC.Infrastructure.Repositories
         }
 
         /// <summary>
-        /// Use case 1: 
+        /// Implementation of Use case 1 (Not ideal to use it, rather use the other AddPlayerToDepthChart method)
         /// </summary>
-        /// <param name="positionId"></param>
-        /// <param name="playerId"></param>
-        /// <param name="depthPosition"></param>
+        /// <param name="positionName">A unique position name under a Team</param>
+        /// <param name="playerNumber">A unique player number of a Team</param>
+        /// <param name="depthPosition">Zero based order (first -> 0, second -> 1 ...) 
+        /// for the position of the player</param>
+        /// <param name="teamId">If there is just one team in the db, teamId is optional</param>
+        /// <returns></returns>
+        public async Task<Order?> AddPlayerToDepthChart(string positionName, int playerNumber, int? depthPosition, int teamId = 1)
+        {
+            // Checking the team entry was completed before using this use case
+            var team = await _context.Teams.FindAsync(teamId);
+            if (team != null)
+            {
+                // Find positionId by the given positionName
+                var position = await _context.Positions
+                    .Where(x => x.Name == positionName && x.TeamId == teamId)
+                    .FirstOrDefaultAsync();
+
+                if(position != null)
+                {
+                    // Find playerId by the given playerNumber
+                    var player = await _context.Players
+                        .Where(x => x.Number == playerNumber && x.TeamId == teamId)
+                        .FirstOrDefaultAsync();
+
+                    if(player != null)
+                    {
+                        await AddPlayerToDepthChart(position.PositionId, player.PlayerId, teamId);
+                    }                    
+                }
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Ideal implementation of Use case 1
+        /// </summary>
+        /// <param name="positionId">Index of the position entry for a team</param>
+        /// <param name="playerId">Index of the player entry for a team</param>
+        /// <param name="depthPosition">Zero based order (first -> 0, second -> 1 ...) 
+        /// for the position of the player</param>
         /// <returns></returns>
         public async Task AddPlayerToDepthChart(int positionId, int playerId, int? depthPosition)
         {
-            // Check positionId and playerId are valid
-            if (_context.Positions.FindAsync(positionId).Result != null && _context.Players.FindAsync(playerId).Result != null)
+            // Business Rule 1: If the depthPosition is null,
+            // Set depthPosition as the next to the max value in the depth chart
+            if (depthPosition == null)
             {
-                // Business Rule 1: If the depthPosition is null,
-                // Set depthPosition as the next to the max value in the depth chart
-                if (depthPosition == null)
+                // Get the next sequence number 
+                var orders = _context.Orders.Where(x => x.PositionId == positionId);
+                if (orders != null)
                 {
-                    // Get the next sequence number 
-                    var orders = _context.Orders.Where(x => x.PositionId == positionId);
-                    if (orders != null)
-                    {
-                        depthPosition = orders.Max(x => x.SeqNumber) + 1;
-                    }
-                    else
-                    {
-                        depthPosition = 1;
-                    }                   
+                    depthPosition = orders.Max(x => x.SeqNumber) + 1; // Last place in the position
                 }
-
-                // Create a new Order item
-                var order = new Order
+                else
                 {
-                    PositionId = positionId,
-                    PlayerId = playerId,
-                    SeqNumber = depthPosition.Value
-                };
-
-                // Business Rule 2: If depthPosition is occupied by another player,
-                // The adding player will get the priority                
-                var orderFromDepthPosition = _context.Orders.Where(x => x.PositionId == positionId && x.SeqNumber >= depthPosition.Value);
-                if(orderFromDepthPosition != null && await orderFromDepthPosition.FirstOrDefaultAsync(x => x.SeqNumber == depthPosition) != null)
-                {
-                    // Move down the remaining players from the depthPosition
-                    await orderFromDepthPosition.ForEachAsync(x => x.SeqNumber = x.SeqNumber + 1);
-                }
-
-                await AddAsync(order);
+                    depthPosition = 0; // First place in the position
+                }                   
             }
+
+            // Create a new Order item
+            var order = new Order
+            {
+                PositionId = positionId,
+                PlayerId = playerId,
+                SeqNumber = depthPosition.Value
+            };
+
+            // Business Rule 2: If depthPosition is occupied by another player,
+            // The adding player will get the priority
+            // The other players from that depthPosition will move down one place
+            var orderFromDepthPosition = _context.Orders.Where(x => x.PositionId == positionId && x.SeqNumber >= depthPosition.Value);
+            if(orderFromDepthPosition != null && await orderFromDepthPosition.FirstOrDefaultAsync(x => x.SeqNumber == depthPosition) != null)
+            {
+                // Move down the remaining players from the depthPosition
+                await orderFromDepthPosition.ForEachAsync(x => ++x.SeqNumber);
+            }
+            
+            await AddAsync(order);
         }
 
         /// <summary>
@@ -133,6 +169,6 @@ namespace DC.Infrastructure.Repositories
         public Task<Player>? GetBackups(int positionId, int playerId)
         {
             throw new NotImplementedException();
-        }
+        }        
     }
 }

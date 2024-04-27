@@ -29,7 +29,7 @@ namespace DC.Presentation.Controllers
         }
 
         // Get a specific order by ID
-        [HttpGet("{details}")]
+        [HttpGet("details")]
         public async Task<ActionResult<Order>> GetOrderById(int positionId, int playerId)
         {
             _logger.LogInformation($"Fetching an order by positionId as {positionId} and playerId as {playerId}");
@@ -53,7 +53,7 @@ namespace DC.Presentation.Controllers
         }
 
         // Update an existing order
-        [HttpPut("{details}")]
+        [HttpPut("details")]
         public async Task<ActionResult> UpdateOrder(int positionId, int playerId, [FromBody] Order updatedOrder)
         {
             if (positionId != updatedOrder.PositionId && playerId != updatedOrder.PlayerId)
@@ -73,7 +73,7 @@ namespace DC.Presentation.Controllers
         }
 
         // Delete an order by ID
-        [HttpDelete("{details}")]
+        [HttpDelete("details")]
         public async Task<ActionResult> DeleteOrder(int positionId, int playerId)
         {
             var existingOrder = await _orderRepository.GetByIdAsync(positionId, playerId);

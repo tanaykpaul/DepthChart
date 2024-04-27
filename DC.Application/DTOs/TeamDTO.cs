@@ -2,7 +2,7 @@
 {
     public class TeamDTO
     {
-        public string Name { get; set; }
+        public required string Name { get; set; }
         public int SportId { get; set; }
     }
 }

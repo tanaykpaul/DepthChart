@@ -2,7 +2,7 @@
 {
     public class PositionDTO
     {
-        public string Name { get; set; }
+        public required string Name { get; set; }
         public int TeamId { get; set; }
     }
 }
