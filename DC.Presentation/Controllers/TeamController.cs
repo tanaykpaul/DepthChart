@@ -2,6 +2,7 @@
 using DC.Domain.Entities;
 using DC.Domain.Interfaces;
 using DC.Domain.Logging;
+using DC.Infrastructure.Repositories;
 using Microsoft.AspNetCore.Mvc;
 
 namespace DC.Presentation.Controllers
@@ -20,27 +21,37 @@ namespace DC.Presentation.Controllers
         }
 
         // Get all teams
-        [HttpGet]
-        public async Task<ActionResult<IEnumerable<Team>>> GetAllTeams()
+        [HttpGet("allTeams")]
+        public async Task<ActionResult<IEnumerable<TeamCreationResponseDTO>>> GetAllTeams()
         {
+            _logger.LogInformation($"Finding all teams...");
             var teams = await _teamRepository.GetAllAsync();
-            return Ok(teams);
+            _logger.LogInformation($"There are {teams.Count} teams returned.");
+
+            var teamsDtoCollection = new List<TeamCreationResponseDTO>();
+            foreach (var team in teams)
+            {
+                teamsDtoCollection.Add(new TeamCreationResponseDTO { TeamId = team.TeamId, TeamName = team.Name, SportId = team.SportId });
+            }
+            return Ok(teamsDtoCollection);
         }
 
         // Get a specific team by ID
         [HttpGet("{id}")]
-        public async Task<ActionResult<Team>> GetTeamById(int id)
+        public async Task<ActionResult<TeamCreationResponseDTO>> GetTeamById(int id)
         {
+            _logger.LogInformation($"Finding a team with Id {id}.");
             var team = await _teamRepository.GetByIdAsync(id);
             if (team == null)
             {
-                return NotFound();
+                _logger.LogWarning($"No team is found with Id {id}.");
+                return NotFound($"No team is found with Id {id}.");
             }
-            return Ok(team);
+            return Ok(new TeamCreationResponseDTO { TeamId = team.TeamId, TeamName = team.Name, SportId = team.SportId });
         }
 
         // Add a new team
-        [HttpPost]
+        [HttpPost("addSport")]
         public async Task<ActionResult<TeamCreationResponseDTO>> AddTeam([FromBody] TeamDTO teamDto)
         {
             var teamItem = await _teamRepository.GetByTeamNameAndSportIdAsync(teamDto.Name, teamDto.SportId);
@@ -66,20 +77,19 @@ namespace DC.Presentation.Controllers
 
         // Update an existing team
         [HttpPut("{id}")]
-        public async Task<ActionResult> UpdateTeam(int id, [FromBody] Team updatedTeam)
+        public async Task<ActionResult> UpdateTeam(int id, [FromBody] TeamDTO teamDTO)
         {
-            if (id != updatedTeam.TeamId)
+            _logger.LogInformation($"Updating a team by id {id}.");
+            var team = await _teamRepository.GetByIdAsync(id);
+            if (team == null)
             {
-                return BadRequest();
+                _logger.LogWarning($"No team is found with Id {id}.");
+                return BadRequest($"There is a team exists with id {id}");
             }
 
-            var existingTeam = await _teamRepository.GetByIdAsync(id);
-            if (existingTeam == null)
-            {
-                return NotFound();
-            }
+            team.Name = teamDTO.Name;
 
-            await _teamRepository.UpdateAsync(updatedTeam);
+            await _teamRepository.UpdateAsync(team);
             await _teamRepository.SaveChangesAsync();
             return NoContent();
         }
@@ -88,10 +98,12 @@ namespace DC.Presentation.Controllers
         [HttpDelete("{id}")]
         public async Task<ActionResult> DeleteTeam(int id)
         {
-            var existingTeam = await _teamRepository.GetByIdAsync(id);
-            if (existingTeam == null)
+            _logger.LogInformation($"Deleting a team by id {id}.");
+            var team = await _teamRepository.GetByIdAsync(id);
+            if (team == null)
             {
-                return NotFound();
+                _logger.LogWarning($"No team is found with Id {id}.");
+                return BadRequest($"There is a team exists with id {id}");
             }
 
             await _teamRepository.DeleteAsync(id);

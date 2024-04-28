@@ -30,7 +30,7 @@ namespace DC.Presentation.Controllers
             var sportsDtoCollection = new List<SportCreationResponseDTO>();
             foreach ( var sport in sports)
             {
-                sportsDtoCollection.Add(new SportCreationResponseDTO { SportId = sport.SportId});
+                sportsDtoCollection.Add(new SportCreationResponseDTO { SportId = sport.SportId, SportName = sport.Name });
             }
             return Ok(sportsDtoCollection);
         }
@@ -46,7 +46,7 @@ namespace DC.Presentation.Controllers
                 _logger.LogWarning($"No sport is found with Id {id}.");
                 return NotFound($"No sport is found with Id {id}.");
             }
-            return Ok(new SportCreationResponseDTO { SportId = sport.SportId});
+            return Ok(new SportCreationResponseDTO { SportId = sport.SportId, SportName = sport.Name });
         }
 
         // Add a new sport
@@ -82,9 +82,9 @@ namespace DC.Presentation.Controllers
                 _logger.LogWarning($"No sport is found with Id {id}.");
                 return BadRequest($"There is a sport exists with id {id}");
             }
-            var sportObj = new Sport { Name = sportDTO.Name };
-            
-            await _sportRepository.UpdateAsync(sportObj);
+            sport.Name = sportDTO.Name;
+
+            await _sportRepository.UpdateAsync(sport);
             await _sportRepository.SaveChangesAsync();
             return NoContent();
         }
