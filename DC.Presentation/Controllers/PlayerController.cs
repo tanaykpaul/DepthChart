@@ -2,6 +2,7 @@
 using DC.Domain.Entities;
 using DC.Domain.Interfaces;
 using DC.Domain.Logging;
+using DC.Infrastructure.Repositories;
 using Microsoft.AspNetCore.Mvc;
 
 namespace DC.Presentation.Controllers
@@ -20,27 +21,49 @@ namespace DC.Presentation.Controllers
         }
 
         // Get all players
-        [HttpGet]
-        public async Task<ActionResult<IEnumerable<Player>>> GetAllPlayers()
+        [HttpGet("allPlayers")]
+        public async Task<ActionResult<IEnumerable<PlayerCreationResponseDTO>>> GetAllPlayers()
         {
+            _logger.LogInformation($"Finding all players...");
             var players = await _playerRepository.GetAllAsync();
-            return Ok(players);
+            _logger.LogInformation($"There are {players.Count} players returned.");
+
+            var playersDtoCollection = new List<PlayerCreationResponseDTO>();
+            foreach (var player in players)
+            {
+                playersDtoCollection.Add(new PlayerCreationResponseDTO
+                {
+                    PlayerId = player.PlayerId,
+                    PlayerName = player.Name,
+                    PlayerNumber = player.Number,
+                    TeamId = player.TeamId
+                });
+            }
+            return Ok(playersDtoCollection);
         }
 
         // Get a specific player by ID
         [HttpGet("{id}")]
-        public async Task<ActionResult<Player>> GetPlayerById(int id)
+        public async Task<ActionResult<PlayerCreationResponseDTO>> GetPlayerById(int id)
         {
+            _logger.LogInformation($"Finding a player with Id {id}.");
             var player = await _playerRepository.GetByIdAsync(id);
             if (player == null)
             {
-                return NotFound();
+                _logger.LogWarning($"No player is found with Id {id}.");
+                return NotFound($"No player is found with Id {id}.");
             }
-            return Ok(player);
+            return Ok(new PlayerCreationResponseDTO
+            {
+                PlayerId = player.PlayerId,
+                PlayerName = player.Name,
+                PlayerNumber = player.Number,
+                TeamId = player.TeamId
+            });
         }
 
         // Add a new player
-        [HttpPost]
+        [HttpPost("addPlayer")]
         public async Task<ActionResult<PlayerCreationResponseDTO>> AddPlayer([FromBody] PlayerDTO playerDto)
         {
             var playerItem = await _playerRepository.GetByPlayerNumberAndTeamIdAsync(playerDto.PlayerNumber, playerDto.TeamId);
@@ -68,20 +91,21 @@ namespace DC.Presentation.Controllers
 
         // Update an existing player
         [HttpPut("{id}")]
-        public async Task<ActionResult> UpdatePlayer(int id, [FromBody] Player updatedPlayer)
+        public async Task<ActionResult> UpdatePlayer(int id, [FromBody] PlayerDTO updatedPlayer)
         {
-            if (id != updatedPlayer.PlayerId)
+            _logger.LogInformation($"Updating a player by id {id}.");
+            var player = await _playerRepository.GetByIdAsync(id);
+            if (player == null)
             {
-                return BadRequest();
+                _logger.LogWarning($"No player is found with Id {id}.");
+                return BadRequest($"There is no player exists with id {id}");
             }
 
-            var existingPlayer = await _playerRepository.GetByIdAsync(id);
-            if (existingPlayer == null)
-            {
-                return NotFound();
-            }
+            player.Name = updatedPlayer.Name;
+            player.Number = updatedPlayer.PlayerNumber;
+            player.Odds = updatedPlayer.Odds;
 
-            await _playerRepository.UpdateAsync(updatedPlayer);
+            await _playerRepository.UpdateAsync(player);
             await _playerRepository.SaveChangesAsync();
             return NoContent();
         }
@@ -90,10 +114,12 @@ namespace DC.Presentation.Controllers
         [HttpDelete("{id}")]
         public async Task<ActionResult> DeletePlayer(int id)
         {
-            var existingPlayer = await _playerRepository.GetByIdAsync(id);
-            if (existingPlayer == null)
+            _logger.LogInformation($"Deleting a player by id {id}.");
+            var player = await _playerRepository.GetByIdAsync(id);
+            if (player == null)
             {
-                return NotFound();
+                _logger.LogWarning($"No player is found with Id {id}.");
+                return BadRequest($"There is no player exists with id {id}");
             }
 
             await _playerRepository.DeleteAsync(id);

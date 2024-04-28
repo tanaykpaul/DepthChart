@@ -84,7 +84,7 @@ namespace DC.Presentation.Controllers
             if (team == null)
             {
                 _logger.LogWarning($"No team is found with Id {id}.");
-                return BadRequest($"There is a team exists with id {id}");
+                return BadRequest($"There is no team exists with id {id}");
             }
 
             team.Name = teamDTO.Name;
@@ -103,7 +103,7 @@ namespace DC.Presentation.Controllers
             if (team == null)
             {
                 _logger.LogWarning($"No team is found with Id {id}.");
-                return BadRequest($"There is a team exists with id {id}");
+                return BadRequest($"There is no team exists with id {id}");
             }
 
             await _teamRepository.DeleteAsync(id);

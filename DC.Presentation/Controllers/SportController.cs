@@ -80,7 +80,7 @@ namespace DC.Presentation.Controllers
             if (sport == null)
             {
                 _logger.LogWarning($"No sport is found with Id {id}.");
-                return BadRequest($"There is a sport exists with id {id}");
+                return BadRequest($"There is no sport exists with id {id}");
             }
             sport.Name = sportDTO.Name;
 
@@ -98,7 +98,7 @@ namespace DC.Presentation.Controllers
             if (sport == null)
             {
                 _logger.LogWarning($"No sport is found with Id {id}.");
-                return BadRequest($"There is a sport exists with id {id}");
+                return BadRequest($"There is no sport exists with id {id}");
             }
 
             await _sportRepository.DeleteAsync(id);
