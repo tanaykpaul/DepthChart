@@ -110,15 +110,17 @@ namespace DC.Infrastructure.Repositories
         /// </summary>
         /// <param name="positionId">Index of the position entry for a team</param>
         /// <param name="playerId">Index of the player entry for a team</param>
-        /// <returns></returns>
-        public void RemovePlayerFromDepthChart(int positionId, int playerId)
+        /// <returns>Removed the player or not</returns>
+        public async Task<bool> RemovePlayerFromDepthChart(int positionId, int playerId)
         {
             _logger.LogInformation($"Deleting order with PositionId as {positionId} and PlayerId as {playerId}");
-            var order = _context.Orders.Find(positionId, playerId);
+            var order =  await _context.Orders.Where(x => x.PositionId == positionId && x.PlayerId == playerId).FirstOrDefaultAsync();
             if (order != null)
             {
                 _context.Orders.Remove(order);
+                return true;
             }
+            return false;
         }        
     }
 }

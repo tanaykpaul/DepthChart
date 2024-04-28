@@ -6,6 +6,6 @@ namespace DC.Domain.Interfaces
     {
         Task<Order?> GetByIdAsync(int positionId, int playerId);
         Task AddPlayerToDepthChart(int positionId, int playerId, int? depthPosition);
-        void RemovePlayerFromDepthChart(int positionId, int playerId);
+        Task<bool> RemovePlayerFromDepthChart(int positionId, int playerId);
     }
 }

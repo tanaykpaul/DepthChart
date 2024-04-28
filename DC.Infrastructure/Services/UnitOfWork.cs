@@ -1,10 +1,8 @@
-﻿using DC.Domain.Entities;
-using DC.Domain.Interfaces;
+﻿using DC.Domain.Interfaces;
 using DC.Domain.Logging;
 using DC.Infrastructure.Data;
 using DC.Infrastructure.Repositories;
 using Microsoft.EntityFrameworkCore;
-using System.Numerics;
 
 namespace DC.Infrastructure.Services
 {
@@ -85,9 +83,11 @@ namespace DC.Infrastructure.Services
         /// <param name="positionName">A unique position name under a Team</param>
         /// <param name="playerNumber">A unique player number of a Team</param>
         /// <param name="teamId">If there is just one team in the db, teamId is optional</param>
-        /// <returns></returns>
-        public async Task<Player?> RemovePlayerFromDepthChart(string positionName, int playerNumber, int teamId = 1)
+        /// <returns>Either an empty List or the Player that is removed</returns>
+        public async Task<List<(int, string)>> RemovePlayerFromDepthChart(string positionName, int playerNumber, int teamId = 1)
         {
+            List<(int, string)> output = [];
+
             // Checking the team entry was completed before using this use case
             var team = await _dbContext.Teams.FindAsync(teamId);
             if (team != null)
@@ -95,10 +95,17 @@ namespace DC.Infrastructure.Services
                 var positionIdAndPlayerId = await GetPositionIdAndPlayerId(positionName, playerNumber, teamId);
                 if (positionIdAndPlayerId.Item1 != null && positionIdAndPlayerId.Item2 != null)
                 {
-                    OrderRepository.RemovePlayerFromDepthChart(positionIdAndPlayerId.Item1.Value, positionIdAndPlayerId.Item2.Value);
+                    bool isRemoved = await OrderRepository.RemovePlayerFromDepthChart(positionIdAndPlayerId.Item1.Value, positionIdAndPlayerId.Item2.Value);
+                    await OrderRepository.SaveChangesAsync();
+                    if(isRemoved)
+                    {
+                        var player = await _dbContext.Players.FindAsync(positionIdAndPlayerId.Item2.Value);
+                        if(player != null)
+                            output.Add((player.Number, player.Name));
+                    }
                 }
             }
-            return null;
+            return output;
         }
 
         /// <summary>
@@ -107,7 +114,7 @@ namespace DC.Infrastructure.Services
         /// <param name="positionId">Index of the position entry for a team</param>
         /// <param name="playerId">Index of the player entry for a team</param>
         /// <param name="teamId">If there is just one team in the db, teamId is optional</param>
-        /// <returns>Either Empty List or List of Players those are Backups</returns>
+        /// <returns>Either an empty List or List of Players those are Backups</returns>
         public async Task<List<(int, string)>> GetBackups(string positionName, int playerNumber, int teamId = 1)
         {
             List<(int, string)> output = [];
@@ -141,8 +148,7 @@ namespace DC.Infrastructure.Services
                     // Business Rule 3: An empty list should be returned, if the given player is not listed in the depth chart at that position                    
                     // For the use case, no action is required here, final return statement is enough
                 }
-            }  
-
+            }
             return output;
         }
 

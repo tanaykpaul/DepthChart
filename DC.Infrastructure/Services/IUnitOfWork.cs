@@ -17,7 +17,7 @@ namespace DC.Infrastructure.Services
         Task AddPlayerToDepthChart(string positionName, int playerNumber, int? depthPosition, int teamId = 1);
 
         // Use case 2: Remove a player from the Depth Chart
-        Task<Player?> RemovePlayerFromDepthChart(string positionName, int playerNumber, int teamId = 1);
+        Task<List<(int, string)>> RemovePlayerFromDepthChart(string positionName, int playerNumber, int teamId = 1);
 
         // Use case 3: Get the Backups list from the Depth Chart
         Task<List<(int, string)>> GetBackups(string positionName, int playerNumber, int teamId = 1);

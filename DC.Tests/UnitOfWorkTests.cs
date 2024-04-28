@@ -89,6 +89,121 @@ namespace DC.Tests
         }
 
         [TestMethod]
+        public async Task AddPlayerToDepthChartExerciseSampleActions_ReturnsExpectedResult()
+        {
+            // Arrange
+            var teamId = 1;
+            await SeedDatabaseTwoPositionsAndSixPlayers();
+
+            await _unitOfWork.AddPlayerToDepthChart("QB", 12, 0);
+            await _unitOfWork.AddPlayerToDepthChart("QB", 11, 1);
+            await _unitOfWork.AddPlayerToDepthChart("QB", 2, 2);
+
+            await _unitOfWork.AddPlayerToDepthChart("LWR", 13, 0);
+            await _unitOfWork.AddPlayerToDepthChart("LWR", 1, 1);
+            await _unitOfWork.AddPlayerToDepthChart("LWR", 10, 2);
+
+            // Act
+            var result = await _unitOfWork.GetBackups("QB", 12);
+            // Assert
+            Assert.IsNotNull(result);
+            Assert.AreEqual(2, result.Count);
+            Assert.AreEqual(11, result.First().Item1);
+            Assert.AreEqual("Blaine Gabbert", result.First().Item2);
+            Assert.AreEqual(2, result.Last().Item1);
+            Assert.AreEqual("Kyle Trask", result.Last().Item2);
+
+            // Act
+            result = await _unitOfWork.GetBackups("LWR", 1);
+            // Assert
+            Assert.IsNotNull(result);
+            Assert.AreEqual(1, result.Count);
+            Assert.AreEqual(10, result.First().Item1);
+            Assert.AreEqual("Scott Miller", result.First().Item2);
+
+            // Act
+            result = await _unitOfWork.GetBackups("LWR", 10);
+            // Assert
+            Assert.IsNotNull(result);
+            Assert.AreEqual(0, result.Count);
+
+            // Act
+            result = await _unitOfWork.GetBackups("QB", 11);
+            // Assert
+            Assert.IsNotNull(result);
+            Assert.AreEqual(1, result.Count);
+            Assert.AreEqual(2, result.First().Item1);
+            Assert.AreEqual("Kyle Trask", result.First().Item2);
+
+            // Act
+            result = await _unitOfWork.GetBackups("QB", 2);
+            // Assert
+            Assert.IsNotNull(result);
+            Assert.AreEqual(0, result.Count);
+
+            // Act
+            IDictionary<string, List<(int, string)>> result1 = await _unitOfWork.GetFullDepthChart(teamId);
+
+            // Assert
+            Assert.IsNotNull(result1);
+            Assert.AreEqual(2, result1.Count);
+
+            Assert.AreEqual("QB", result1.First().Key);
+            Assert.AreEqual(3, result1.First().Value.Count);
+
+            Assert.AreEqual(12, result1.First().Value[0].Item1);
+            Assert.AreEqual("Tom Brady", result1.First().Value[0].Item2);
+            Assert.AreEqual(11, result1.First().Value[1].Item1);
+            Assert.AreEqual("Blaine Gabbert", result1.First().Value[1].Item2);
+            Assert.AreEqual(2, result1.First().Value[2].Item1);
+            Assert.AreEqual("Kyle Trask", result1.First().Value[2].Item2);
+
+            Assert.AreEqual("LWR", result1.Last().Key);
+            Assert.AreEqual(3, result1.Last().Value.Count);
+
+            Assert.AreEqual(13, result1.Last().Value[0].Item1);
+            Assert.AreEqual("Mike Evans", result1.Last().Value[0].Item2);
+            Assert.AreEqual(1, result1.Last().Value[1].Item1);
+            Assert.AreEqual("Jaelon Darden", result1.Last().Value[1].Item2);
+            Assert.AreEqual(10, result1.Last().Value[2].Item1);
+            Assert.AreEqual("Scott Miller", result1.Last().Value[2].Item2);
+
+            // Act
+            result = await _unitOfWork.RemovePlayerFromDepthChart("LWR", 13);
+            
+            // Assert
+            Assert.IsNotNull(result);
+            Assert.AreEqual(1, result.Count);
+            Assert.AreEqual(13, result.First().Item1);
+            Assert.AreEqual("Mike Evans", result.First().Item2);
+
+            // Act
+            result1 = await _unitOfWork.GetFullDepthChart(teamId);
+
+            // Assert
+            Assert.IsNotNull(result1);
+            Assert.AreEqual(2, result1.Count);
+
+            Assert.AreEqual("QB", result1.First().Key);
+            Assert.AreEqual(3, result1.First().Value.Count);
+
+            Assert.AreEqual(12, result1.First().Value[0].Item1);
+            Assert.AreEqual("Tom Brady", result1.First().Value[0].Item2);
+            Assert.AreEqual(11, result1.First().Value[1].Item1);
+            Assert.AreEqual("Blaine Gabbert", result1.First().Value[1].Item2);
+            Assert.AreEqual(2, result1.First().Value[2].Item1);
+            Assert.AreEqual("Kyle Trask", result1.First().Value[2].Item2);
+
+            Assert.AreEqual("LWR", result1.Last().Key);
+            Assert.AreEqual(2, result1.Last().Value.Count);
+
+            Assert.AreEqual(1, result1.Last().Value[0].Item1);
+            Assert.AreEqual("Jaelon Darden", result1.Last().Value[0].Item2);
+            Assert.AreEqual(10, result1.Last().Value[1].Item1);
+            Assert.AreEqual("Scott Miller", result1.Last().Value[1].Item2);
+        }
+
+        [TestMethod]
         public async Task GetBackups_ReturnsExpectedResult()
         {
             // Arrange
