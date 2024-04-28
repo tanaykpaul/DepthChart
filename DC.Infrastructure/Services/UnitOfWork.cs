@@ -4,6 +4,7 @@ using DC.Domain.Logging;
 using DC.Infrastructure.Data;
 using DC.Infrastructure.Repositories;
 using Microsoft.EntityFrameworkCore;
+using System.Numerics;
 
 namespace DC.Infrastructure.Services
 {
@@ -72,7 +73,7 @@ namespace DC.Infrastructure.Services
                 var positionIdAndPlayerId = await GetPositionIdAndPlayerId(positionName, playerNumber, teamId);
                 if(positionIdAndPlayerId.Item1 != null && positionIdAndPlayerId.Item2 != null)
                 {
-                    await _orderRepository.AddPlayerToDepthChart(positionIdAndPlayerId.Item1.Value, positionIdAndPlayerId.Item2.Value, depthPosition);
+                    await OrderRepository.AddPlayerToDepthChart(positionIdAndPlayerId.Item1.Value, positionIdAndPlayerId.Item2.Value, depthPosition);
                 }
             }
             return null;
@@ -94,7 +95,7 @@ namespace DC.Infrastructure.Services
                 var positionIdAndPlayerId = await GetPositionIdAndPlayerId(positionName, playerNumber, teamId);
                 if (positionIdAndPlayerId.Item1 != null && positionIdAndPlayerId.Item2 != null)
                 {
-                    _orderRepository.RemovePlayerFromDepthChart(positionIdAndPlayerId.Item1.Value, positionIdAndPlayerId.Item2.Value);
+                    OrderRepository.RemovePlayerFromDepthChart(positionIdAndPlayerId.Item1.Value, positionIdAndPlayerId.Item2.Value);
                 }
             }
             return null;
@@ -107,9 +108,9 @@ namespace DC.Infrastructure.Services
         /// <param name="playerId">Index of the player entry for a team</param>
         /// <param name="teamId">If there is just one team in the db, teamId is optional</param>
         /// <returns>Either Empty List or List of Players those are Backups</returns>
-        public async Task<ICollection<Player>> GetBackups(string positionName, int playerNumber, int teamId = 1)
+        public async Task<List<(int, string)>> GetBackups(string positionName, int playerNumber, int teamId = 1)
         {
-            ICollection<Player> output = [];
+            List<(int, string)> output = [];
 
             // Checking the team entry was completed before using this use case
             var team = await _dbContext.Teams.FindAsync(teamId);
@@ -118,21 +119,19 @@ namespace DC.Infrastructure.Services
                 var positionIdAndPlayerId = await GetPositionIdAndPlayerId(positionName, playerNumber, teamId);
                 if (positionIdAndPlayerId.Item1 != null && positionIdAndPlayerId.Item2 != null)
                 {
-                    var order = await _orderRepository.GetByIdAsync(positionIdAndPlayerId.Item1.Value, positionIdAndPlayerId.Item2.Value);
+                    var order = await OrderRepository.GetByIdAsync(positionIdAndPlayerId.Item1.Value, positionIdAndPlayerId.Item2.Value);
                     if (order != null)
                     {
                         // Business Rule 1: For a given player and position, return all players that are “Backups”, those with a lower position_depth
-                        var playerIds = await _dbContext.Orders
+                        var orders = await _dbContext.Orders
                                                         .Where(x => x.PositionId == positionIdAndPlayerId.Item1.Value &&
-                                                                    x.PlayerId == positionIdAndPlayerId.Item2.Value &&
                                                                     x.SeqNumber > order.SeqNumber)
-                                                        .Select(x => x.PlayerId)
+                                                        .Include(x => x.Player)
                                                         .ToListAsync();
 
-                        // Find the players for the list
-                        if (playerIds != null)
+                        foreach(var orderObj in orders)
                         {
-                            return await _dbContext.Players.Where(x => playerIds.Contains(x.PlayerId)).ToListAsync();
+                            output.Add((orderObj.Player.Number, orderObj.Player.Name));
                         }
 
                         // Business Rule 2: An empty list should be returned if the given player has no Backups

@@ -66,11 +66,41 @@ namespace DC.Tests
         }
 
         [TestMethod]
+        public async Task GetBackups_ReturnsExpectedResult()
+        {
+            // Arrange
+            await SeedDatabaseTwoPositionsWithTwoOdersWithEachOrderHasTwoPlayers();
+
+            // Act
+            List<(int, string)> result1LT = await _unitOfWork.GetBackups("LT", 76);
+            List<(int, string)> result2LT = await _unitOfWork.GetBackups("LT", 72);
+            List<(int, string)> result1RT = await _unitOfWork.GetBackups("RT", 78);
+            List<(int, string)> result2RT = await _unitOfWork.GetBackups("RT", 72);
+
+            // Assert
+            Assert.IsNotNull(result1LT);
+            Assert.AreEqual(1, result1LT.Count);
+            Assert.AreEqual(72, result1LT.First().Item1);
+            Assert.AreEqual("JOSH WELLS", result1LT.First().Item2);
+
+            Assert.IsNotNull(result2LT);
+            Assert.AreEqual(0, result2LT.Count);
+
+            Assert.IsNotNull(result1RT);
+            Assert.AreEqual(1, result1RT.Count);
+            Assert.AreEqual(72, result1RT.First().Item1);
+            Assert.AreEqual("JOSH WELLS", result1RT.First().Item2);
+
+            Assert.IsNotNull(result2RT);
+            Assert.AreEqual(0, result2RT.Count);            
+        }
+
+        [TestMethod]
         public async Task GetFullDepthChart_ReturnsExpectedResult()
         {
             // Arrange
             int teamId = 1;
-            SeedDatabaseTwoPositionsWithTwoOdersWithEachOrderHasTwoPlayers();
+            await SeedDatabaseTwoPositionsWithTwoOdersWithEachOrderHasTwoPlayers();
 
             // Act
             IDictionary<string, List<(int, string)>> result = await _unitOfWork.GetFullDepthChart(teamId);
@@ -78,14 +108,18 @@ namespace DC.Tests
             // Assert
             Assert.IsNotNull(result);
             Assert.AreEqual(2, result.Count);
+
             Assert.AreEqual("LT", result.First().Key);
             Assert.AreEqual(2, result.First().Value.Count);
+
             Assert.AreEqual(76, result.First().Value[0].Item1);
             Assert.AreEqual("Donovan Smith", result.First().Value[0].Item2);
             Assert.AreEqual(72, result.First().Value[1].Item1);
             Assert.AreEqual("JOSH WELLS", result.First().Value[1].Item2);
+
             Assert.AreEqual("RT", result.Last().Key);
             Assert.AreEqual(2, result.Last().Value.Count);
+
             Assert.AreEqual(78, result.Last().Value[0].Item1);
             Assert.AreEqual("Tristan Wirfs", result.Last().Value[0].Item2);
             Assert.AreEqual(72, result.Last().Value[1].Item1);
@@ -99,7 +133,7 @@ namespace DC.Tests
             _dbContext.Dispose();
         }
 
-        private async void SeedDatabaseTwoPositionsWithTwoOdersWithEachOrderHasTwoPlayers()
+        private async Task SeedDatabaseTwoPositionsWithTwoOdersWithEachOrderHasTwoPlayers()
         {
             var sport = new Sport { Name = "NFL" };
             await _dbContext.Sports.AddAsync(sport);
@@ -111,9 +145,9 @@ namespace DC.Tests
             var positionRT = new Position { Name = "RT", TeamId = team.TeamId };
             await _dbContext.Positions.AddRangeAsync([positionLT, positionRT]);
 
-            var player76 = new Player { Number = 76, Name = "Donovan Smith" };
-            var player72 = new Player { Number = 72, Name = "JOSH WELLS" };
-            var player78 = new Player { Number = 78, Name = "Tristan Wirfs" };
+            var player76 = new Player { Number = 76, Name = "Donovan Smith", TeamId = team.TeamId };
+            var player72 = new Player { Number = 72, Name = "JOSH WELLS", TeamId = team.TeamId };
+            var player78 = new Player { Number = 78, Name = "Tristan Wirfs", TeamId = team.TeamId };
             await _dbContext.Players.AddRangeAsync([player76, player72, player78]);
 
             var order0_LT = new Order { SeqNumber = 0, PlayerId = player76.PlayerId, PositionId = positionLT.PositionId };

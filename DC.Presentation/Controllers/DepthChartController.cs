@@ -3,6 +3,7 @@ using DC.Domain.Entities;
 using DC.Domain.Logging;
 using DC.Infrastructure.Services;
 using Microsoft.AspNetCore.Mvc;
+using System.Collections.Generic;
 
 namespace DC.Presentation.Controllers
 {
@@ -210,16 +211,25 @@ namespace DC.Presentation.Controllers
 
         // Get the Backup list of players for a position of a player
         [HttpGet("getBackups")]
-        public async Task<ActionResult<Order>> GetBackUps(string positionName, int playerNumber)
+        public async Task<ActionResult<List<string>>> GetBackUps(string positionName, int playerNumber)
         {
+            List<string> output = new List<string>();
+
             _logger.LogInformation($"Find the Backups of the player number {playerNumber} for the position {positionName}");
             var players = await _unitOfWork.GetBackups(positionName, playerNumber);
             if (players == null)
             {
                 _logger.LogWarning($"There is no Backups for the player number {playerNumber} in {positionName} position");
-                return NotFound();
+                output.Add("<NO LIST>");
             }
-            return Ok(players);
+            else
+            {
+                foreach (var item in players)
+                {
+                    output.Add($"#{item.Item1} – {item.Item2}");
+                }
+            }
+            return Ok(output);
         }
 
         // Get the players for all positions of the team
