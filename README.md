@@ -46,16 +46,17 @@ As per the Clean architecture guidelines, I have created 5 projects for the solu
 1. DC.Domain - contains the core business logic interfaces and domain models
 2. DC.Application - includes the use cases and application logic
 3. DC.Infrastructure - contains implementations of the interfaces defined in the domain and application layers, including database access
-4. DC.Presentation - contains a asp.net core web api having 6 controllers (1 controller for the 4 use cases and the remainings are for the repositories related to the entities)
+4. DC.Presentation - contains a asp.net core web api having 6 controllers (1 controller namely "DepthChartController.cs" to run the 4 use cases and the remaining controllers are implemented for the repositories related to the entities)
 5. DC.Tests - contains unit tests for the solutions
 
 ## Implementation
 1. I have created 5 repository interfaces and their implementation.
-2. To meeting the 4 use cases, I have created a Unit of Work interface and its implementation that uses the core repositories
+2. To implement the 4 use cases, I have created a Unit of Work interface and its implementation that uses the core repositories. Hence, the name of the interface is IUnitOfWork.cs and UnitOfWork.cs is the implementation.
 3. I have implemented logging process. It is open to use any Libraries such as SeriLog, Log4net etc.
 4. I have used Entity Framework Core as the ORM technology
 5. I have used In-memory database for experiment in the Presentation and Test projects. It is open to use any database such as SQL server 2022 etc.
 6. I have use Moq in the Test project
+7. I have applied SOLID principles including Dependency injection etc.
  
 ## Assumptions
 1. To experiment the use cases, (a) first, create a Sport (only use Name -> "NFL") entry from SportController (output -> SportId) or use AddAsync method from the SportRepository.cs (b) then, create a Team entry using Name -> "Tampa Bay Buccaneers" and SportId (from the previous step); output is TeamId, (c) then, create a Postion entry using Name -> "QB" and TeamId, and finally (d) create a Player entry using Number -> 12, Name -> Tom Brady and TeamId.
