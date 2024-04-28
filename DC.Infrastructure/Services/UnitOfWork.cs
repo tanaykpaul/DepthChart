@@ -72,7 +72,7 @@ namespace DC.Infrastructure.Services
                 if(positionIdAndPlayerId.Item1 != null && positionIdAndPlayerId.Item2 != null)
                 {
                     await OrderRepository.AddPlayerToDepthChart(positionIdAndPlayerId.Item1.Value, positionIdAndPlayerId.Item2.Value, depthPosition);
-                    await OrderRepository.SaveChangesAsync();
+                    await OrderRepository.SaveChangesAsync();                    
                 }
             }
         }
@@ -133,6 +133,7 @@ namespace DC.Infrastructure.Services
                         var orders = await _dbContext.Orders
                                                         .Where(x => x.PositionId == positionIdAndPlayerId.Item1.Value &&
                                                                     x.SeqNumber > order.SeqNumber)
+                                                        .OrderBy(x => x.SeqNumber)
                                                         .Include(x => x.Player)
                                                         .ToListAsync();
 
@@ -173,8 +174,9 @@ namespace DC.Infrastructure.Services
 
                 foreach (var position in positions)
                 {
+                    var orders = position.Orders.OrderBy(x => x.SeqNumber);
                     List<(int playerNumber, string playerName)> playersList = [];
-                    foreach (var order in position.Orders)
+                    foreach (var order in orders)
                     {
                         int playerNumber = order.Player.Number;
                         string playerName = order.Player.Name;

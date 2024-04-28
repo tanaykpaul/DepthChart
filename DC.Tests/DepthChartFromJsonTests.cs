@@ -240,19 +240,19 @@ namespace DC.Tests
 
             // Retrieve order and check its name
             var order1 = await _orderRepository.GetByIdAsync(orders[0].PositionId, orders[0].PlayerId);
-            Assert.AreEqual(1, order1.SeqNumber);
+            Assert.AreEqual(0, order1.SeqNumber);
             var order2 = await _orderRepository.GetByIdAsync(orders[1].PositionId, orders[1].PlayerId);
-            Assert.AreEqual(2, order2.SeqNumber);
+            Assert.AreEqual(1, order2.SeqNumber);
             var order3 = await _orderRepository.GetByIdAsync(orders[2].PositionId, orders[2].PlayerId);
-            Assert.AreEqual(3, order3.SeqNumber);
+            Assert.AreEqual(2, order3.SeqNumber);
             var order4 = await _orderRepository.GetByIdAsync(orders[3].PositionId, orders[3].PlayerId);
-            Assert.AreEqual(1, order4.SeqNumber);
+            Assert.AreEqual(0, order4.SeqNumber);
             var order5 = await _orderRepository.GetByIdAsync(orders[4].PositionId, orders[4].PlayerId);
-            Assert.AreEqual(2, order5.SeqNumber);
+            Assert.AreEqual(1, order5.SeqNumber);
             var order6 = await _orderRepository.GetByIdAsync(orders[5].PositionId, orders[5].PlayerId);
-            Assert.AreEqual(1, order6.SeqNumber);
+            Assert.AreEqual(0, order6.SeqNumber);
             var order7 = await _orderRepository.GetByIdAsync(orders[6].PositionId, orders[6].PlayerId);
-            Assert.AreEqual(2, order7.SeqNumber);
+            Assert.AreEqual(1, order7.SeqNumber);
 
             await _dbContext.DisposeAsync();
         }
