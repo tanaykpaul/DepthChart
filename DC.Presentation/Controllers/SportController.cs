@@ -20,32 +20,44 @@ namespace DC.Presentation.Controllers
         }
 
         // Get all sports
-        [HttpGet]
-        public async Task<ActionResult<IEnumerable<Sport>>> GetAllSports()
+        [HttpGet("allSports")]
+        public async Task<ActionResult<IEnumerable<SportCreationResponseDTO>>> GetAllSports()
         {
+            _logger.LogInformation($"Finding all sports...");
             var sports = await _sportRepository.GetAllAsync();
-            return Ok(sports);
+            _logger.LogInformation($"There are {sports.Count} sports returned.");
+
+            var sportsDtoCollection = new List<SportCreationResponseDTO>();
+            foreach ( var sport in sports)
+            {
+                sportsDtoCollection.Add(new SportCreationResponseDTO { SportId = sport.SportId});
+            }
+            return Ok(sportsDtoCollection);
         }
 
         // Get a specific sport by ID
         [HttpGet("{id}")]
-        public async Task<ActionResult<Sport>> GetSportById(int id)
+        public async Task<ActionResult<SportCreationResponseDTO>> GetSportById(int id)
         {
+            _logger.LogInformation($"Finding a sport with Id {id}.");
             var sport = await _sportRepository.GetByIdAsync(id);
             if (sport == null)
             {
-                return NotFound();
+                _logger.LogWarning($"No sport is found with Id {id}.");
+                return NotFound($"No sport is found with Id {id}.");
             }
-            return Ok(sport);
+            return Ok(new SportCreationResponseDTO { SportId = sport.SportId});
         }
 
         // Add a new sport
-        [HttpPost]
+        [HttpPost("addSport")]
         public async Task<ActionResult<SportCreationResponseDTO>> AddSport([FromBody] SportDTO sportDto)
         {
+            _logger.LogInformation($"Adding a sport by name {sportDto.Name}.");
             var sportItem = await _sportRepository.GetByNameAsync(sportDto.Name);
             if (sportItem != null)
             {
+                _logger.LogInformation($"There is a sport exists with the name {sportDto.Name}");
                 return BadRequest($"There is a sport exists with the name {sportDto.Name}");
             }
 
@@ -61,14 +73,18 @@ namespace DC.Presentation.Controllers
 
         // Update an existing sport
         [HttpPut("{id}")]
-        public async Task<ActionResult> UpdateSport(int id, [FromBody] Sport updatedSport)
+        public async Task<ActionResult> UpdateSport(int id, [FromBody] SportDTO sportDTO)
         {
-            if (id != updatedSport.SportId)
+            _logger.LogInformation($"Updating a sport by Name {sportDTO.Name}.");
+            var sport = await _sportRepository.GetByIdAsync(id);
+            if (sport == null)
             {
-                return BadRequest();
+                _logger.LogWarning($"No sport is found with Id {id}.");
+                return BadRequest($"There is a sport exists with id {id}");
             }
-
-            await _sportRepository.UpdateAsync(updatedSport);
+            var sportObj = new Sport { Name = sportDTO.Name };
+            
+            await _sportRepository.UpdateAsync(sportObj);
             await _sportRepository.SaveChangesAsync();
             return NoContent();
         }
@@ -77,6 +93,14 @@ namespace DC.Presentation.Controllers
         [HttpDelete("{id}")]
         public async Task<ActionResult> DeleteSport(int id)
         {
+            _logger.LogInformation($"Deleting a sport by Id {id}.");
+            var sport = await _sportRepository.GetByIdAsync(id);
+            if (sport == null)
+            {
+                _logger.LogWarning($"No sport is found with Id {id}.");
+                return BadRequest($"There is a sport exists with id {id}");
+            }
+
             await _sportRepository.DeleteAsync(id);
             await _sportRepository.SaveChangesAsync();
             return NoContent();
