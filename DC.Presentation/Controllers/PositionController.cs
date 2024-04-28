@@ -4,6 +4,7 @@ using DC.Domain.Interfaces;
 using DC.Domain.Logging;
 using DC.Infrastructure.Repositories;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 
 namespace DC.Presentation.Controllers
 {
@@ -21,27 +22,47 @@ namespace DC.Presentation.Controllers
         }
 
         // Get all positions
-        [HttpGet]
-        public async Task<ActionResult<IEnumerable<Position>>> GetAllPositions()
+        [HttpGet("allPositions")]
+        public async Task<ActionResult<IEnumerable<PositionCreationResponseDTO>>> GetAllPositions()
         {
+            _logger.LogInformation($"Finding all positions...");
             var positions = await _positionRepository.GetAllAsync();
-            return Ok(positions);
+            _logger.LogInformation($"There are {positions.Count} positions returned.");
+
+            var positionsDtoCollection = new List<PositionCreationResponseDTO>();
+            foreach (var position in positions)
+            {
+                positionsDtoCollection.Add(new PositionCreationResponseDTO
+                {
+                    PositionId = position.PositionId,
+                    PositionName = position.Name,
+                    TeamId = position.TeamId
+                });
+            }
+            return Ok(positionsDtoCollection);
         }
 
         // Get a specific position by ID
         [HttpGet("{id}")]
-        public async Task<ActionResult<Position>> GetPositionById(int id)
+        public async Task<ActionResult<PositionCreationResponseDTO>> GetPositionById(int id)
         {
+            _logger.LogInformation($"Finding a position with Id {id}.");
             var position = await _positionRepository.GetByIdAsync(id);
             if (position == null)
             {
-                return NotFound();
+                _logger.LogWarning($"No position is found with Id {id}.");
+                return NotFound($"No position is found with Id {id}.");
             }
-            return Ok(position);
+            return Ok(new PositionCreationResponseDTO
+            {
+                PositionId = position.PositionId,
+                PositionName = position.Name,
+                TeamId = position.TeamId
+            });
         }
 
         // Add a new position
-        [HttpPost]
+        [HttpPost("addPosition")]
         public async Task<ActionResult<PositionCreationResponseDTO>> AddPosition([FromBody] PositionDTO positionDto)
         {
             var positionItem = await _positionRepository.GetByPositionNameAndTeamIdAsync(positionDto.Name, positionDto.TeamId);
@@ -67,20 +88,19 @@ namespace DC.Presentation.Controllers
 
         // Update an existing position
         [HttpPut("{id}")]
-        public async Task<ActionResult> UpdatePosition(int id, [FromBody] Position updatedPosition)
+        public async Task<ActionResult> UpdatePosition(int id, [FromBody] PositionDTO updatedPosition)
         {
-            if (id != updatedPosition.PositionId)
+            _logger.LogInformation($"Updating a position by id {id}.");
+            var position = await _positionRepository.GetByIdAsync(id);
+            if (position == null)
             {
-                return BadRequest();
+                _logger.LogWarning($"No position is found with Id {id}.");
+                return BadRequest($"There is no position exists with id {id}");
             }
 
-            var existingPosition = await _positionRepository.GetByIdAsync(id);
-            if (existingPosition == null)
-            {
-                return NotFound();
-            }
-
-            await _positionRepository.UpdateAsync(updatedPosition);
+            position.Name = updatedPosition.Name;
+            
+            await _positionRepository.UpdateAsync(position);
             await _positionRepository.SaveChangesAsync();
             return NoContent();
         }
@@ -89,10 +109,12 @@ namespace DC.Presentation.Controllers
         [HttpDelete("{id}")]
         public async Task<ActionResult> DeletePosition(int id)
         {
-            var existingPosition = await _positionRepository.GetByIdAsync(id);
-            if (existingPosition == null)
+            _logger.LogInformation($"Deleting a position by id {id}.");
+            var position = await _positionRepository.GetByIdAsync(id);
+            if (position == null)
             {
-                return NotFound();
+                _logger.LogWarning($"No position is found with Id {id}.");
+                return BadRequest($"There is no position exists with id {id}");
             }
 
             await _positionRepository.DeleteAsync(id);

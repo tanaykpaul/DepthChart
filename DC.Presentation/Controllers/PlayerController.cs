@@ -36,6 +36,7 @@ namespace DC.Presentation.Controllers
                     PlayerId = player.PlayerId,
                     PlayerName = player.Name,
                     PlayerNumber = player.Number,
+                    Odds = player.Odds,
                     TeamId = player.TeamId
                 });
             }
@@ -58,6 +59,7 @@ namespace DC.Presentation.Controllers
                 PlayerId = player.PlayerId,
                 PlayerName = player.Name,
                 PlayerNumber = player.Number,
+                Odds = player.Odds,
                 TeamId = player.TeamId
             });
         }
