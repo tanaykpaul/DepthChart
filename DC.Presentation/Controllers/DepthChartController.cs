@@ -1,9 +1,7 @@
 ﻿using DC.Application.DTOs;
-using DC.Domain.Entities;
 using DC.Domain.Logging;
 using DC.Infrastructure.Services;
 using Microsoft.AspNetCore.Mvc;
-using System.Collections.Generic;
 
 namespace DC.Presentation.Controllers
 {
@@ -25,6 +23,7 @@ namespace DC.Presentation.Controllers
         [HttpPost("addPlayerToDepthChart")]
         public async Task<ActionResult> AddPlayerToDepthChart([FromBody] AddPlayerToDepthChartDTO orderDto)
         {
+            _logger.LogInformation($"Adding a player number {orderDto.PlayerNumber} for the position {orderDto.PositionName}");
             await _unitOfWork.AddPlayerToDepthChart(orderDto.PositionName, orderDto.PlayerNumber, orderDto.DepthPosition);
 
             return Created();
@@ -37,15 +36,18 @@ namespace DC.Presentation.Controllers
             List<string> output = new List<string>();
             _logger.LogInformation($"Remove an order by the player number {playerNumber} for the position {positionName}");
 
-            var players = await _unitOfWork.GetBackups(positionName, playerNumber);
-            if (players == null)
+            var players = await _unitOfWork.RemovePlayerFromDepthChart(positionName, playerNumber);
+            if (players == null || players.Count == 0)
             {
                 _logger.LogWarning($"There is no player number {playerNumber} in {positionName} position");
                 output.Add("<NO LIST>");
             }
             else
             {
-                output.Add($"#{players.First().Item1} – {players.First().Item2}");
+                foreach (var item in players)
+                {
+                    output.Add($"#{item.Item1} – {item.Item2}");
+                }
             }
             return Ok(output);
         }
@@ -58,7 +60,7 @@ namespace DC.Presentation.Controllers
             _logger.LogInformation($"Find the Backups of the player number {playerNumber} for the position {positionName}");
 
             var players = await _unitOfWork.GetBackups(positionName, playerNumber);
-            if (players == null)
+            if (players == null || players.Count == 0)
             {
                 _logger.LogWarning($"There is no Backups for the player number {playerNumber} in {positionName} position");
                 output.Add("<NO LIST>");
@@ -90,7 +92,16 @@ namespace DC.Presentation.Controllers
             {
                 foreach (var item in list)
                 {
-                    output.Add($"{item.Key} - " + string.Join(',', $"(#{item.Value[0]}, {item.Value[1]})"));
+                    string content = string.Empty;
+                    foreach(var innerItem in item.Value)
+                    {
+                        content = content + $"(#{innerItem.Item1}, {innerItem.Item2}), ";
+                    }
+                    if(content.Length > 0)
+                    {
+                        content = content.Substring(0, content.Length - 2);
+                    }
+                    output.Add($"{item.Key} - {content}");
                 }
             }
 
