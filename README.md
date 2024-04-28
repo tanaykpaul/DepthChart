@@ -52,11 +52,13 @@ As per the Clean architecture guidelines, I have created 5 projects for the solu
 ## Implementation
 1. I have created 5 repository interfaces and their implementation.
 2. To implement the 4 use cases, I have created a Unit of Work interface and its implementation that uses the core repositories. Hence, the name of the interface is IUnitOfWork.cs and UnitOfWork.cs is the implementation.
-3. I have implemented logging process. It is open to use any Libraries such as SeriLog, Log4net etc.
-4. I have used Entity Framework Core as the ORM technology
-5. I have used In-memory database for experiment in the Presentation and Test projects. It is open to use any database such as SQL server 2022 etc.
-6. I have use Moq in the Test project
-7. I have applied SOLID principles including Dependency injection etc.
+4. I have implemented logging process. It is open to use any Libraries such as SeriLog, Log4net etc.
+5. I have used Entity Framework Core as the ORM technology
+6. I have used In-memory database for experiment in the Presentation and Test projects. It is open to use any database such as SQL server 2022 etc.
+7. I have use Moq in the Test project
+8. I have applied SOLID principles including Dependency injection etc.
+
+If you want to push an existing Depth Chart into the Database (hence, DepthChartDbContext under the DC.Infrastructure -> Data), you can a JSON file (to see the structure open the DepthChart.json file in JsonInput folder under the DC.Tests project). To enter the data from the JSON file into your database, see the SetupInitialData() method of the DepthChartFromJsonTests.cs under the DC.Tests project.
  
 ## Assumptions
 1. To experiment the use cases, (a) first, create a Sport (only use Name -> "NFL") entry from SportController (output -> SportId) or use AddAsync method from the SportRepository.cs (b) then, create a Team entry using Name -> "Tampa Bay Buccaneers" and SportId (from the previous step); output is TeamId, (c) then, create a Postion entry using Name -> "QB" and TeamId, and finally (d) create a Player entry using Number -> 12, Name -> Tom Brady and TeamId.
