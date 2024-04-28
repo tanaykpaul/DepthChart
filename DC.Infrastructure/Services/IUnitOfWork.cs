@@ -14,7 +14,7 @@ namespace DC.Infrastructure.Services
         Task<int> SaveChangesAsync();
 
         // Use case 1: Add a player to the Depth Chart
-        Task<Order?> AddPlayerToDepthChart(string positionName, int playerNumber, int? depthPosition, int teamId = 1);
+        Task AddPlayerToDepthChart(string positionName, int playerNumber, int? depthPosition, int teamId = 1);
 
         // Use case 2: Remove a player from the Depth Chart
         Task<Player?> RemovePlayerFromDepthChart(string positionName, int playerNumber, int teamId = 1);

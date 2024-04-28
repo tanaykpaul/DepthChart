@@ -77,16 +77,5 @@ namespace DC.Infrastructure.Repositories
 
             return (null, false);
         }
-
-        async Task<(List<Position>?, bool)> IPositionRepository.GetFullDepthChart(int teamId)
-        {
-            var team = await _context.Teams.FindAsync(teamId);
-            if (team != null)
-            {
-                return (await _context.Positions.Where(x => x.TeamId == teamId).ToListAsync(), true);
-            }
-
-            return (null, false);
-        }
     }
 }

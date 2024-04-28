@@ -64,7 +64,7 @@ namespace DC.Infrastructure.Services
         /// <param name="depthPosition">Zero based order (first -> 0, second -> 1 ...) for the position of the player</param>
         /// <param name="teamId">If there is just one team in the db, teamId is optional</param>
         /// <returns></returns>
-        public async Task<Order?> AddPlayerToDepthChart(string positionName, int playerNumber, int? depthPosition, int teamId = 1)
+        public async Task AddPlayerToDepthChart(string positionName, int playerNumber, int? depthPosition, int teamId = 1)
         {
             // Checking the team entry was completed before using this use case
             var team = await _dbContext.Teams.FindAsync(teamId);
@@ -74,9 +74,9 @@ namespace DC.Infrastructure.Services
                 if(positionIdAndPlayerId.Item1 != null && positionIdAndPlayerId.Item2 != null)
                 {
                     await OrderRepository.AddPlayerToDepthChart(positionIdAndPlayerId.Item1.Value, positionIdAndPlayerId.Item2.Value, depthPosition);
+                    await OrderRepository.SaveChangesAsync();
                 }
             }
-            return null;
         }
 
         /// <summary>

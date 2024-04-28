@@ -66,6 +66,29 @@ namespace DC.Tests
         }
 
         [TestMethod]
+        public async Task AddPlayerToDepthChart_ReturnsExpectedResult()
+        {
+            // Arrange
+            await SeedDatabaseTwoPositionsAndSixPlayers();
+
+            // Act
+            await _unitOfWork.AddPlayerToDepthChart("QB", 12, 0);
+            await _unitOfWork.AddPlayerToDepthChart("QB", 11, 1);
+            await _unitOfWork.AddPlayerToDepthChart("QB", 2, 2);
+
+            await _unitOfWork.AddPlayerToDepthChart("LWR", 13, 0);
+            await _unitOfWork.AddPlayerToDepthChart("LWR", 1, 1);
+            await _unitOfWork.AddPlayerToDepthChart("LWR", 10, 2);
+
+            // Assert
+            Assert.AreEqual(6, _dbContext.Orders.Count());
+            Assert.AreEqual(1, _dbContext.Orders.First().PositionId);
+            Assert.AreEqual(1, _dbContext.Orders.First().PlayerId);
+            Assert.AreEqual(2, _dbContext.Orders.Last().PositionId);
+            Assert.AreEqual(6, _dbContext.Orders.Last().PlayerId);
+        }
+
+        [TestMethod]
         public async Task GetBackups_ReturnsExpectedResult()
         {
             // Arrange
@@ -131,6 +154,30 @@ namespace DC.Tests
         {
             // Dispose the in-memory database
             _dbContext.Dispose();
+        }
+
+        private async Task SeedDatabaseTwoPositionsAndSixPlayers()
+        {
+            var sport = new Sport { Name = "NFL" };
+            await _dbContext.Sports.AddAsync(sport);
+
+            var team = new Team { Name = "Tampa Bay Buccaneers", SportId = sport.SportId };
+            await _dbContext.Teams.AddAsync(team);
+
+            var positionQB = new Position { Name = "QB", TeamId = team.TeamId };
+            var positionLWR = new Position { Name = "LWR", TeamId = team.TeamId };
+            await _dbContext.Positions.AddRangeAsync([positionQB, positionLWR]);
+
+            var player12 = new Player { Number = 12, Name = "Tom Brady", TeamId = team.TeamId };
+            var player11 = new Player { Number = 11, Name = "Blaine Gabbert", TeamId = team.TeamId };
+            var player2 = new Player { Number = 2, Name = "Kyle Trask", TeamId = team.TeamId };
+            var player13 = new Player { Number = 13, Name = "Mike Evans", TeamId = team.TeamId };
+            var player1 = new Player { Number = 1, Name = "Jaelon Darden", TeamId = team.TeamId };
+            var player10 = new Player { Number = 10, Name = "Scott Miller", TeamId = team.TeamId };
+
+            await _dbContext.Players.AddRangeAsync([player12, player11, player2, player13, player1, player10]);
+
+            await _dbContext.SaveChangesAsync();
         }
 
         private async Task SeedDatabaseTwoPositionsWithTwoOdersWithEachOrderHasTwoPlayers()
