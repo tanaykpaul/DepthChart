@@ -65,11 +65,64 @@ namespace DC.Tests
             Assert.AreEqual(1, changes);
         }
 
+        [TestMethod]
+        public async Task GetFullDepthChart_ReturnsExpectedResult()
+        {
+            // Arrange
+            int teamId = 1;
+            SeedDatabaseTwoPositionsWithTwoOdersWithEachOrderHasTwoPlayers();
+
+            // Act
+            IDictionary<string, List<(int, string)>> result = await _unitOfWork.GetFullDepthChart(teamId);
+
+            // Assert
+            Assert.IsNotNull(result);
+            Assert.AreEqual(2, result.Count);
+            Assert.AreEqual("LT", result.First().Key);
+            Assert.AreEqual(2, result.First().Value.Count);
+            Assert.AreEqual(76, result.First().Value[0].Item1);
+            Assert.AreEqual("Donovan Smith", result.First().Value[0].Item2);
+            Assert.AreEqual(72, result.First().Value[1].Item1);
+            Assert.AreEqual("JOSH WELLS", result.First().Value[1].Item2);
+            Assert.AreEqual("RT", result.Last().Key);
+            Assert.AreEqual(2, result.Last().Value.Count);
+            Assert.AreEqual(78, result.Last().Value[0].Item1);
+            Assert.AreEqual("Tristan Wirfs", result.Last().Value[0].Item2);
+            Assert.AreEqual(72, result.Last().Value[1].Item1);
+            Assert.AreEqual("JOSH WELLS", result.Last().Value[1].Item2);
+        }
+
         [TestCleanup]
         public void Cleanup()
         {
             // Dispose the in-memory database
             _dbContext.Dispose();
+        }
+
+        private async void SeedDatabaseTwoPositionsWithTwoOdersWithEachOrderHasTwoPlayers()
+        {
+            var sport = new Sport { Name = "NFL" };
+            await _dbContext.Sports.AddAsync(sport);
+
+            var team = new Team { Name = "Tampa Bay Buccaneers", SportId = sport.SportId };
+            await _dbContext.Teams.AddAsync(team);
+
+            var positionLT = new Position { Name = "LT", TeamId = team.TeamId };
+            var positionRT = new Position { Name = "RT", TeamId = team.TeamId };
+            await _dbContext.Positions.AddRangeAsync([positionLT, positionRT]);
+
+            var player76 = new Player { Number = 76, Name = "Donovan Smith" };
+            var player72 = new Player { Number = 72, Name = "JOSH WELLS" };
+            var player78 = new Player { Number = 78, Name = "Tristan Wirfs" };
+            await _dbContext.Players.AddRangeAsync([player76, player72, player78]);
+
+            var order0_LT = new Order { SeqNumber = 0, PlayerId = player76.PlayerId, PositionId = positionLT.PositionId };
+            var order1_LT = new Order { SeqNumber = 1, PlayerId = player72.PlayerId, PositionId = positionLT.PositionId };
+            var order0_RT = new Order { SeqNumber = 0, PlayerId = player78.PlayerId, PositionId = positionRT.PositionId };
+            var order1_RT = new Order { SeqNumber = 1, PlayerId = player72.PlayerId, PositionId = positionRT.PositionId };
+            await _dbContext.Orders.AddRangeAsync([order0_LT, order1_LT, order0_RT, order1_RT]);
+
+            await _dbContext.SaveChangesAsync();
         }
     }
 }

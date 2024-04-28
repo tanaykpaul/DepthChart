@@ -60,13 +60,21 @@ namespace DC.Infrastructure.Services
         /// </summary>
         /// <param name="positionName">A unique position name under a Team</param>
         /// <param name="playerNumber">A unique player number of a Team</param>
-        /// <param name="depthPosition">Zero based order (first -> 0, second -> 1 ...) 
-        /// for the position of the player</param>
+        /// <param name="depthPosition">Zero based order (first -> 0, second -> 1 ...) for the position of the player</param>
         /// <param name="teamId">If there is just one team in the db, teamId is optional</param>
         /// <returns></returns>
         public async Task<Order?> AddPlayerToDepthChart(string positionName, int playerNumber, int? depthPosition, int teamId = 1)
         {
-            await HandleAddOrRemoveOrder(positionName, playerNumber, true, teamId);
+            // Checking the team entry was completed before using this use case
+            var team = await _dbContext.Teams.FindAsync(teamId);
+            if (team != null)
+            {
+                var positionIdAndPlayerId = await GetPositionIdAndPlayerId(positionName, playerNumber, teamId);
+                if(positionIdAndPlayerId.Item1 != null && positionIdAndPlayerId.Item2 != null)
+                {
+                    await _orderRepository.AddPlayerToDepthChart(positionIdAndPlayerId.Item1.Value, positionIdAndPlayerId.Item2.Value, depthPosition);
+                }
+            }
             return null;
         }
 
@@ -75,10 +83,20 @@ namespace DC.Infrastructure.Services
         /// </summary>
         /// <param name="positionName">A unique position name under a Team</param>
         /// <param name="playerNumber">A unique player number of a Team</param>
+        /// <param name="teamId">If there is just one team in the db, teamId is optional</param>
         /// <returns></returns>
         public async Task<Player?> RemovePlayerFromDepthChart(string positionName, int playerNumber, int teamId = 1)
         {
-            await HandleAddOrRemoveOrder(positionName, playerNumber, false, teamId);
+            // Checking the team entry was completed before using this use case
+            var team = await _dbContext.Teams.FindAsync(teamId);
+            if (team != null)
+            {
+                var positionIdAndPlayerId = await GetPositionIdAndPlayerId(positionName, playerNumber, teamId);
+                if (positionIdAndPlayerId.Item1 != null && positionIdAndPlayerId.Item2 != null)
+                {
+                    _orderRepository.RemovePlayerFromDepthChart(positionIdAndPlayerId.Item1.Value, positionIdAndPlayerId.Item2.Value);
+                }
+            }
             return null;
         }
 
@@ -87,61 +105,104 @@ namespace DC.Infrastructure.Services
         /// </summary>
         /// <param name="positionId">Index of the position entry for a team</param>
         /// <param name="playerId">Index of the player entry for a team</param>
+        /// <param name="teamId">If there is just one team in the db, teamId is optional</param>
         /// <returns>Either Empty List or List of Players those are Backups</returns>
-        public async Task<ICollection<Player>> GetBackups(int positionId, int playerId)
+        public async Task<ICollection<Player>> GetBackups(string positionName, int playerNumber, int teamId = 1)
         {
-            ICollection<Player> output = new List<Player>();
+            ICollection<Player> output = [];
 
-            var order = await _orderRepository.GetByIdAsync(positionId, playerId);
-            if(order != null)
-            {
-                // Business Rule 1: For a given player and position,
-                // Return all players that are “Backups”, those with a lower position_depth
-                var list = await _dbContext.Orders
-                                        .Where(x => x.PositionId == positionId &&
-                                            x.PlayerId == playerId &&
-                                            x.SeqNumber > order.SeqNumber).ToListAsync();
-
-                // find the list of players
-            }
-
-            // Business Rule 3: An empty list should be returned
-            // if the given player is not listed in the depth chart at that position
-
-            return output;
-        }
-
-        private async Task HandleAddOrRemoveOrder(string positionName, int playerNumber, bool isAdd, int teamId = 1)
-        {
             // Checking the team entry was completed before using this use case
             var team = await _dbContext.Teams.FindAsync(teamId);
             if (team != null)
             {
-                // Find positionId by the given positionName
-                var position = await _dbContext.Positions
-                    .Where(x => x.Name == positionName && x.TeamId == teamId)
-                    .FirstOrDefaultAsync();
-
-                if (position != null)
+                var positionIdAndPlayerId = await GetPositionIdAndPlayerId(positionName, playerNumber, teamId);
+                if (positionIdAndPlayerId.Item1 != null && positionIdAndPlayerId.Item2 != null)
                 {
-                    // Find playerId by the given playerNumber
-                    var player = await _dbContext.Players
-                        .Where(x => x.Number == playerNumber && x.TeamId == teamId)
-                        .FirstOrDefaultAsync();
-
-                    if (player != null)
+                    var order = await _orderRepository.GetByIdAsync(positionIdAndPlayerId.Item1.Value, positionIdAndPlayerId.Item2.Value);
+                    if (order != null)
                     {
-                        if (isAdd)
+                        // Business Rule 1: For a given player and position, return all players that are “Backups”, those with a lower position_depth
+                        var playerIds = await _dbContext.Orders
+                                                        .Where(x => x.PositionId == positionIdAndPlayerId.Item1.Value &&
+                                                                    x.PlayerId == positionIdAndPlayerId.Item2.Value &&
+                                                                    x.SeqNumber > order.SeqNumber)
+                                                        .Select(x => x.PlayerId)
+                                                        .ToListAsync();
+
+                        // Find the players for the list
+                        if (playerIds != null)
                         {
-                            await _orderRepository.AddPlayerToDepthChart(position.PositionId, player.PlayerId, teamId);
+                            return await _dbContext.Players.Where(x => playerIds.Contains(x.PlayerId)).ToListAsync();
                         }
-                        else
-                        {
-                            _orderRepository.RemovePlayerFromDepthChart(position.PositionId, player.PlayerId);
-                        }
+
+                        // Business Rule 2: An empty list should be returned if the given player has no Backups
+                        // For the use case, no action is required here, final return statement is enough
                     }
+
+                    // Business Rule 3: An empty list should be returned, if the given player is not listed in the depth chart at that position                    
+                    // For the use case, no action is required here, final return statement is enough
                 }
-            }
+            }  
+
+            return output;
         }
+
+        /// <summary>
+        /// Find the players for all positions of a team
+        /// </summary>
+        /// <param name="teamId">If there is just one team in the db, teamId is optional</param>
+        /// <returns>Key of the dictionary is the position name, First item of each List tuple is the player number and the other one is the player name</returns>
+        public async Task<IDictionary<string, List<(int, string)>>> GetFullDepthChart(int teamId = 1)
+        {
+            IDictionary<string, List<(int, string)>> output = new Dictionary<string, List<(int, string)>>();
+            
+            // Checking the team entry was completed before using this use case
+            var team = await _dbContext.Teams.FindAsync(teamId);
+            if (team != null)
+            {
+                var positions = await _dbContext.Positions
+                                            .Where(x => x.TeamId == teamId)
+                                            .Include(x => x.Orders)
+                                            .ThenInclude(y => y.Player)
+                                            .ToListAsync();
+
+                foreach (var position in positions)
+                {
+                    List<(int playerNumber, string playerName)> playersList = [];
+                    foreach (var order in position.Orders)
+                    {
+                        int playerNumber = order.Player.Number;
+                        string playerName = order.Player.Name;
+
+                        playersList.Add((playerNumber, playerName));
+                    }
+                    output.Add(position.Name, playersList);
+                }
+            }            
+            return output;
+        }
+
+
+        /// <summary>
+        /// Get the primary key values of position and player entities
+        /// </summary>
+        /// <param name="positionId">Index of the position entry for a team</param>
+        /// <param name="playerId">Index of the player entry for a team</param>
+        /// <param name="teamId">Index of the team entry</param>
+        /// <returns>null or Index of the position and player entries respectively</returns>
+        private async Task<(int?, int?)> GetPositionIdAndPlayerId(string positionName, int playerNumber, int teamId)
+        {
+            // Find positionId by the given positionName under the teamId
+            var position = await _dbContext.Positions
+                .Where(x => x.Name == positionName && x.TeamId == teamId)
+                .FirstOrDefaultAsync();
+            
+            // Find playerId by the given playerNumber under the teamId
+            var player = await _dbContext.Players
+                .Where(x => x.Number == playerNumber && x.TeamId == teamId)
+                .FirstOrDefaultAsync();
+
+            return (position?.PositionId, player?.PlayerId);
+        }        
     }
 }

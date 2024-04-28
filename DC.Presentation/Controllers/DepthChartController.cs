@@ -185,7 +185,9 @@ namespace DC.Presentation.Controllers
             }
             return Ok(order);
         }
+        #endregion
 
+        #region Use Cases
         // Add a player for a position into the depth chart (Use Case 1)
         [HttpPost("addPlayerToDepthChart")]
         public async Task<ActionResult<OrderCreationResponseDTO>> AddPlayerToDepthChart([FromBody] AddPlayerToDepthChartDTO orderDto)
@@ -197,13 +199,51 @@ namespace DC.Presentation.Controllers
         }
 
         // Remove a player from the depth chart for a position (Use Case 2)
-        [HttpPost("removePlayerFromDepthChart")]
-        public async Task<ActionResult<OrderCreationResponseDTO>> RemovePlayerFromDepthChart([FromBody] RemovePlayerFromDepthChartDTO orderDto)
+        [HttpDelete("removePlayerFromDepthChart")]
+        public async Task<ActionResult<OrderCreationResponseDTO>> RemovePlayerFromDepthChart(string positionName, int playerNumber)
         {
-            await _unitOfWork.RemovePlayerFromDepthChart(orderDto.PositionName, orderDto.PlayerNumber);
+            await _unitOfWork.RemovePlayerFromDepthChart(positionName, playerNumber);
             await _unitOfWork.SaveChangesAsync();
             return CreatedAtAction(nameof(GetOrderById), new { positionId = 1, playerId = 1 },
                 new OrderCreationResponseDTO { PositionId = 1, PlayerId = 1 });
+        }
+
+        // Get the Backup list of players for a position of a player
+        [HttpGet("getBackups")]
+        public async Task<ActionResult<Order>> GetBackUps(string positionName, int playerNumber)
+        {
+            _logger.LogInformation($"Find the Backups of the player number {playerNumber} for the position {positionName}");
+            var players = await _unitOfWork.GetBackups(positionName, playerNumber);
+            if (players == null)
+            {
+                _logger.LogWarning($"There is no Backups for the player number {playerNumber} in {positionName} position");
+                return NotFound();
+            }
+            return Ok(players);
+        }
+
+        // Get the players for all positions of the team
+        [HttpGet("getFullDepthChart")]
+        public async Task<ActionResult<List<string>>> GetFullDepthChart()
+        {
+            List<string> output = new List<string>();
+            _logger.LogInformation($"Find the players for all positions of the team");
+            
+            var list = await _unitOfWork.GetFullDepthChart();
+            if (list == null)
+            {
+                _logger.LogWarning($"The Depth Chart has no positions");
+                output.Add("<NO LIST>");
+            }
+            else
+            {
+                foreach(var item in list)
+                {
+                    output.Add($"{item.Key} - " + string.Join(',', $"(#{item.Value[0]}, {item.Value[1]})"));
+                }
+            }
+
+            return Ok(output);
         }
         #endregion
     }
