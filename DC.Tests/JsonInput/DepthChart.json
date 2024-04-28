@@ -8,7 +8,7 @@
 					"Name": "LWR",
 					"Orders": [
 						{
-							"SeqNumber": 1,
+							"SeqNumber": 0,
 							"PlayerDetails": {
 								"Name": "Mike Evans",
 								"Number": 13,
@@ -16,7 +16,7 @@
 							}
 						},
 						{
-							"SeqNumber": 2,
+							"SeqNumber": 1,
 							"PlayerDetails": {
 								"Name": "Jaelon Darden",
 								"Number": 1,
@@ -24,7 +24,7 @@
 							}
 						},
 						{
-							"SeqNumber": 3,
+							"SeqNumber": 2,
 							"PlayerDetails": {
 								"Name": "Scott Miller",
 								"Number": 10,
@@ -37,7 +37,7 @@
 					"Name": "LT",
 					"Orders": [
 						{
-							"SeqNumber": 1,
+							"SeqNumber": 0,
 							"PlayerDetails": {
 								"Name": "Donovan Smith",
 								"Number": 76,
@@ -45,7 +45,7 @@
 							}
 						},
 						{
-							"SeqNumber": 2,
+							"SeqNumber": 1,
 							"PlayerDetails": {
 								"Name": "JOSH WELLS",
 								"Number": 72,
@@ -58,7 +58,7 @@
 					"Name": "RT",
 					"Orders": [
 						{
-							"SeqNumber": 1,
+							"SeqNumber": 0,
 							"PlayerDetails": {
 								"Name": "Tristan Wirfs",
 								"Number": 78,
@@ -66,7 +66,7 @@
 							}
 						},
 						{
-							"SeqNumber": 2,
+							"SeqNumber": 1,
 							"PlayerDetails": {
 								"Name": "JOSH WELLS",
 								"Number": 72,

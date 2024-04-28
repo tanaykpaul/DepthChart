@@ -32,6 +32,8 @@ namespace DC.Infrastructure.Repositories
         {
             _logger.LogInformation("Retrieving all orders");
             return await _context.Orders
+                                 .OrderBy(x => x.PositionId)
+                                 .ThenBy(x => x.SeqNumber)
                                  .Include(o => o.Player)
                                  .Include(o => o.Position)
                                  .ToListAsync();
@@ -41,10 +43,21 @@ namespace DC.Infrastructure.Repositories
         public async Task AddAsync(Order order)
         {
             _logger.LogInformation("Adding a new order");
-            await _context.Orders.AddAsync(order);
+            
+            // Check if the order with the same composite key already exists
+            var existingOrder = await _context.Orders
+                .FirstOrDefaultAsync(o => o.PositionId == order.PositionId && o.PlayerId == order.PlayerId);
+
+            if (existingOrder != null)
+            {
+                // Handle the conflict (e.g., log a message, return an error, update the existing order, etc.)
+                throw new InvalidOperationException("An order with the same PositionId and PlayerId already exists.");
+            }
+
+            // If no existing order found, add the new order
+            await _context.Orders.AddAsync(order);            
         }
 
-        // Update an existing Order
         public async Task UpdateAsync(Order order)
         {
             _logger.LogInformation($"Updating order with PositionId as {order.PositionId} and PlayerId as {order.PlayerId}");
@@ -74,7 +87,7 @@ namespace DC.Infrastructure.Repositories
             {
                 // Get the next sequence number 
                 var orders = _context.Orders.Where(x => x.PositionId == positionId);
-                if (orders != null)
+                if (orders != null && orders.Any())
                 {
                     depthPosition = orders.Max(x => x.SeqNumber) + 1; // Last place in the position
                 }
