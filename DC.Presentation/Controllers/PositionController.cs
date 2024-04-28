@@ -65,26 +65,6 @@ namespace DC.Presentation.Controllers
             return CreatedAtAction(nameof(GetPositionById), new { id = position.PositionId }, new PositionCreationResponseDTO { PositionId = position.PositionId, TeamId = position.TeamId });
         }
 
-        // Add a new order for Use case 4
-        [HttpPost("UseCase4")]
-        public async Task<ActionResult<PositionCreationResponseDTO>> GetFullDepthChart([FromBody] PositionDTO positionDto)
-        {
-            var positionItem = await _positionRepository.GetFullDepthChart(positionDto.TeamId);
-            if (!positionItem.Item2)
-            {
-                return BadRequest($"There is no team item is crreated yet by TeamId = {positionDto.TeamId}.");
-            }
-            if (positionItem.Item1 != null)
-            {
-                // return the full depth chart
-                return Ok(positionItem.Item1);
-            }
-            else
-            {
-                return Ok(null);
-            }
-        }
-
         // Update an existing position
         [HttpPut("{id}")]
         public async Task<ActionResult> UpdatePosition(int id, [FromBody] Position updatedPosition)
