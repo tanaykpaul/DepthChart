@@ -46,7 +46,7 @@ As per the Clean architecture guidelines, I have created 5 projects for the solu
 1. DC.Domain - contains the core business logic interfaces and domain models
 2. DC.Application - includes the use cases and application logic
 3. DC.Infrastructure - contains implementations of the interfaces defined in the domain and application layers, including database access
-4. DC.Presentation - contains a asp.net core web api having 6 controllers (1 controller namely "DepthChartController.cs" to run the 4 use cases and the remaining controllers are implemented for the repositories related to the entities)
+4. DC.Presentation - contains a asp.net core web api having 5 controllers (1 controller namely "DepthChartController.cs" to run the 4 use cases and the remaining controllers are implemented for the repositories related to the entities)
 5. DC.Tests - contains unit tests for the solutions
 
 ## Implementation
