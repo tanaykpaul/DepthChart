@@ -34,6 +34,59 @@ The solution needs to be scalable to add more Sports - MLB, NHL, NBA etc. as wel
 4. getFullDepthChart()
     - Print out the full depth chart with every position on the team and every player within the Depth Chart
 
+### Some Sample Inputs / Outputs
+#### Create 6 players for 2 positions ("QB" and "LWR")
+1. var TomBrady = { "number": 12, "name": "Tom Brady" }
+2. var BlaineGabbert = { "number": 11, "name": "Blaine Gabbert" } 
+3. var KyleTrask = { "number": 2, "name": "Kyle Trask" }
+ 
+4. var MikeEvans = { "number": 13, "name": "Mike Evans" } 
+5. var JaelonDarden = { "number": 1, "name": "Jaelon Darden" } 
+6. var ScottMiller = { "number": 10, "name": "Scott Miller" } 
+
+#### Call use case methods
+1. addPlayerToDepthChart(“QB”, Tom Brady, 0); 
+2. addPlayerToDepthChart(“QB”, Blaine Gabbert, 1); 
+3. addPlayerToDepthChart(“QB”, Kyle Trask, 2); 
+4. addPlayerToDepthChart(“LWR”, Mike Evans, 0); 
+5. addPlayerToDepthChart(“LWR”, Jaelon Darden, 1); 
+6. addPlayerToDepthChart(“LWR”, Scott Miller, 2); 
+
+7. getBackups(“QB”, 12) 
+/* Output */ 
+#11 – Blaine Gabbert 
+#2 – Kyle Trask 
+
+8. getBackups(“LWR”, 1) 
+/* Output */
+#10 – Scott Miller 
+
+9. getBackups(“QB”, 2) 
+/* Output */
+<NO LIST> 
+
+10. getBackups(“QB”, 11) 
+/* Output */ 
+#2 - Kyle Trask 
+
+11. getBackups(“QB”, 2) 
+/* Output */
+<NO LIST> 
+
+12. getFullDepthChart() 
+/* Output */ 
+QB – (#12, Tom Brady), (#11, Blaine Gabbert), (#2, Kyle Trask) 
+LWR – (#13, Mike Evans), (#1, Jaelon Darden), (#10, Scott Miller) 
+
+13. removePlayerFromDepthChart(“WR”, 13) 
+/* Output */ 
+#13 – Mike Evans 
+
+14. getFullDepthChart() 
+/* Output */ 
+QB – (#12, Tom Brady), (#11, Blaine Gabbert), (#2, Kyle Trask) 
+LWR - (#1, Jaelon Darden), (#10, Scott Miller)
+
 ## Data Model
 Based on the Business requirements and data flow, I have identified 4 entities (i.e., Sport, Team, Player and Position). These entities can manage the Depth Chart efficiently. See the following Entity-Relationship:
 1. Sport (NFL) has one-to-many relationship with Team (Tampa Bay Buccaneers, Dallas Cowboys etc.)
