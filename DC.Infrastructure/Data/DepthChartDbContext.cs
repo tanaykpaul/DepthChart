@@ -32,12 +32,14 @@ namespace DC.Infrastructure.Data
             modelBuilder.Entity<Position>()
                 .HasOne(p => p.Team)
                 .WithMany(t => t.Positions)
-                .HasForeignKey(p => p.TeamId);
+                .HasForeignKey(p => p.TeamId)
+                .OnDelete(DeleteBehavior.Restrict);
 
             modelBuilder.Entity<Player>()
                 .HasOne(p => p.Team)
                 .WithMany(t => t.Players)
-                .HasForeignKey(p => p.TeamId);
+                .HasForeignKey(p => p.TeamId)
+                .OnDelete(DeleteBehavior.Restrict);
 
             modelBuilder.Entity<Order>()
             .HasKey(o => new { o.PlayerId, o.PositionId });
