@@ -60,7 +60,7 @@ namespace DC.Tests
                 string jsonData = File.ReadAllText(jsonFilePath);
                 try
                 {   
-                    var depthChartDto = JsonSerializer.Deserialize<DepthChartDto>(jsonData);
+                    var depthChartDto = JsonSerializer.Deserialize<DepthChartDTO>(jsonData);
                     if(depthChartDto != null)
                     {
                         // Setup a sport

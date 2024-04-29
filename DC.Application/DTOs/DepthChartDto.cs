@@ -1,6 +1,6 @@
 ﻿namespace DC.Application.DTOs
 {
-    public class DepthChartDto
+    public class DepthChartDTO
     {
         public string Sport { get; set; }
         public TeamDto[] Teams { get; set; }

@@ -4,7 +4,7 @@ using System.Text.Json;
 
 namespace DC.Application.Services
 {
-    public class ConsumeInputFromJson : IConsumeInput<DepthChartDto>
+    public class ConsumeInputFromJson : IConsumeInput<DepthChartDTO>
     {
         private readonly IAppLogger _logger;
 
@@ -13,14 +13,14 @@ namespace DC.Application.Services
             _logger = logger;
         }
 
-        public DepthChartDto? GetData(string fileContents)
+        public DepthChartDTO? GetData(string fileContents)
         {
             try
             {
                 if(!string.IsNullOrWhiteSpace(fileContents))
                 {
                     _logger.LogInformation("Performing Json Serializtion...");
-                    return JsonSerializer.Deserialize<DepthChartDto>(fileContents);
+                    return JsonSerializer.Deserialize<DepthChartDTO>(fileContents);
                 }
                 return null;
             }
