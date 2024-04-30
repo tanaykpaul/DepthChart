@@ -24,8 +24,5 @@ namespace DC.Infrastructure.Services
 
         // Use case 4: Get the full Depth Chart
         Task<IDictionary<string, List<(int, string)>>> GetFullDepthChart(int teamId = 1);
-
-        // Store a collection of entities
-        Task<int> AddEntitiesAsync<TEntity>(IEnumerable<TEntity> entities) where TEntity : class;
     }
 }

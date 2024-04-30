@@ -211,16 +211,5 @@ namespace DC.Infrastructure.Services
 
             return (position?.PositionId, player?.PlayerId);
         }
-
-        public async Task<int> AddEntitiesAsync<TEntity>(IEnumerable<TEntity> entities) where TEntity : class
-        {
-            if (entities == null)
-            {
-                return 0;
-            }
-
-            _dbContext.Set<TEntity>().AddRange(entities);
-            return await _dbContext.SaveChangesAsync();
-        }
     }
 }

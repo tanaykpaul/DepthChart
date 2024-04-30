@@ -2,6 +2,6 @@
 {
     public interface IProcessInput<TEntity, T>
     {
-        TEntity? GetData(string fileContents);
+        (TEntity?, T?) GetData(string fileContents);
     }
 }

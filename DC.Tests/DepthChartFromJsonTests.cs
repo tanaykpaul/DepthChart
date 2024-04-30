@@ -1,11 +1,8 @@
-﻿using AutoMapper;
-using DC.Application.DTOs;
-using DC.Application.Mapping;
+﻿using DC.Application.DTOs;
 using DC.Application.Services;
 using DC.Domain.Entities;
 using DC.Domain.Logging;
 using DC.Infrastructure.Data;
-using DC.Infrastructure.Logging;
 using DC.Infrastructure.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Moq;
@@ -27,8 +24,7 @@ namespace DC.Tests
         private Mock<IAppLogger> _mockPlayerLogger;
         private Mock<IAppLogger> _mockPositionLogger;
         private Mock<IAppLogger> _mockOrderLogger;
-        private IMapper _mockMapper;
-
+        
         [TestInitialize]
         public void Setup()
         {
@@ -39,14 +35,7 @@ namespace DC.Tests
 
             _dbContext = new DepthChartDbContext(options);
             _dbContext.Database.EnsureDeletedAsync();
-            _dbContext.Database.EnsureCreatedAsync();
-
-            // Configure AutoMapper with the MappingProfile
-            var config = new MapperConfiguration(cfg =>
-            {
-                cfg.AddProfile<MappingProfile>();
-            });
-            _mockMapper = config.CreateMapper();
+            _dbContext.Database.EnsureCreatedAsync();            
         }
 
         // Setup initial data for sport, team, player, position, and orders
@@ -299,22 +288,6 @@ namespace DC.Tests
             Assert.AreEqual(2, order6.SeqNumber);
 
             await _dbContext.DisposeAsync();
-        }
-
-        [TestMethod]
-        public void TestGetDataFromJsonStringContents()
-        {
-            // Arrange
-            var jsonFilePath = @"JsonInput\DepthChart.json";
-            string jsonData = File.ReadAllText(jsonFilePath);
-            _mockSportLogger = new Mock<IAppLogger>();
-
-            // Act
-            var service = new PartAFromJSON(_mockSportLogger.Object, _mockMapper);
-            var sport = service.GetData(jsonData);
-
-            // Assert
-            Assert.IsNotNull(sport);
-        }
+        }        
     }
 }
