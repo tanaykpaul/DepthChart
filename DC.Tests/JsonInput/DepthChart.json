@@ -1,79 +1,72 @@
 {
-	"Sport": "NFL",
+	"Name": "NFL",
 	"Teams": [
 		{
 			"Name": "Tampa Bay Buccaneers",
 			"Positions": [
 				{
-					"Name": "LWR",
-					"Orders": [
-						{
-							"SeqNumber": 0,
-							"PlayerDetails": {
-								"Name": "Mike Evans",
-								"Number": 13,
-								"Odds": "14/1"
-							}
-						},
-						{
-							"SeqNumber": 1,
-							"PlayerDetails": {
-								"Name": "Jaelon Darden",
-								"Number": 1,
-								"Odds": "21/4"
-							}
-						},
-						{
-							"SeqNumber": 2,
-							"PlayerDetails": {
-								"Name": "Scott Miller",
-								"Number": 10,
-								"Odds": "19/6"
-							}
-						}
-					]
+					"Name": "QB"
 				},
 				{
-					"Name": "LT",
-					"Orders": [
-						{
-							"SeqNumber": 0,
-							"PlayerDetails": {
-								"Name": "Donovan Smith",
-								"Number": 76,
-								"Odds": "15/2"
-							}
-						},
-						{
-							"SeqNumber": 1,
-							"PlayerDetails": {
-								"Name": "JOSH WELLS",
-								"Number": 72,
-								"Odds": "SF19"
-							}
-						}
-					]
+					"Name": "LWR"
+				}
+			],
+			"Players": [
+				{
+					"Number": 12,
+					"Name": "Tom Brady"
 				},
 				{
-					"Name": "RT",
-					"Orders": [
-						{
-							"SeqNumber": 0,
-							"PlayerDetails": {
-								"Name": "Tristan Wirfs",
-								"Number": 78,
-								"Odds": "20/1"
-							}
-						},
-						{
-							"SeqNumber": 1,
-							"PlayerDetails": {
-								"Name": "JOSH WELLS",
-								"Number": 72,
-								"Odds": "SF19"
-							}
-						}
-					]
+					"Number": 11,
+					"Name": "Blaine Gabbert"
+				},
+				{
+					"Number": 2,
+					"Name": "Kyle Trask"
+				},
+				{
+					"Number": 13,
+					"Name": "Mike Evans"
+				},
+				{
+					"Number": 1,
+					"Name": "Jaelon Darden"
+				},
+				{
+					"Number": 10,
+					"Name": "Scott Miller"
+				}
+			],
+			"Orders": [
+				{
+					"SeqNumber": 0,
+					"PositionName": "QB",
+					"PlayerNumber": 12
+				},
+				{
+					"SeqNumber": 1,
+					"PositionName": "QB",
+					"PlayerNumber": 11
+				},
+				{
+					"SeqNumber": 2,
+					"PositionName": "QB",
+					"PlayerNumber": 2
+				},
+				{
+					"SeqNumber": 0,
+					"PositionName": "LWR",
+					"PlayerNumber": 13
+				},
+				{
+					"SeqNumber": 1,
+					"PositionName": "LWR",
+					"PlayerNumber": 1
+				},
+				{
+					"SeqNumber": 2,
+					"PositionName": "LWR",
+					"PlayerNumber": 10
 				}
 			]
 		}

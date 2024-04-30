@@ -60,74 +60,110 @@ namespace DC.Tests
                 string jsonData = File.ReadAllText(jsonFilePath);
                 try
                 {   
-                    var depthChartDto = JsonSerializer.Deserialize<DepthChartDTO>(jsonData);
-                    if(depthChartDto != null)
+                    var sportDto = JsonSerializer.Deserialize<SportDTO>(jsonData);
+                    if (sportDto != null)
                     {
                         // Setup a sport
-                        var sport = new Sport { Name = depthChartDto.Sport };
+                        var sport = new Sport { Name = sportDto.Name };
                         await _sportRepository.AddAsync(sport);
                         await _sportRepository.SaveChangesAsync();
-                        
-                        // Setup a teams
-                        foreach (var teamDto in depthChartDto.Teams)
+
+                        // Setup teams
+                        if (sportDto.Teams != null)
                         {
-                            var team = new Team { Name = teamDto.Name, SportId = sport.SportId };
-                            await _teamRepository.AddAsync(team);
-                            await _teamRepository.SaveChangesAsync();
-
-                            // Setup positions of the team
-                            foreach (var positionDto in teamDto.Positions)
+                            foreach (var teamDto in sportDto.Teams)
                             {
-                                int playerId = -1, positionId = -1;
+                                var team = new Team { Name = teamDto.Name, SportId = sport.SportId };
+                                await _teamRepository.AddAsync(team);
+                                await _teamRepository.SaveChangesAsync();
 
-                                // Add the Position into the team if this is a new Position under the team
-                                var positionItem = await _positionRepository.GetByPositionNameAndTeamIdAsync(positionDto.Name, team.TeamId);
-                                if (!positionItem.Item2)
+                                // Setup positions of the team
+                                if (teamDto.Positions != null)
                                 {
-                                    throw new Exception($"Input JSON file is incorrect for a Position Name {positionDto.Name}.");
-                                }
-                                if (positionItem.Item1 == null)
-                                {
-                                    // A new Position
-                                    var position = new Position { Name = positionDto.Name, TeamId = team.TeamId };
-                                    await _positionRepository.AddAsync(position);
-                                    await _positionRepository.SaveChangesAsync();
-                                    positionId = position.PositionId;
-                                }
-                                else
-                                {
-                                    positionId = positionItem.Item1.PositionId;
-                                }
-
-                                foreach (var orderDto in positionDto.Orders)
-                                {
-                                    var playerDto = orderDto.PlayerDetails;
-
-                                    // Add the Player into the team if this is a new Player under the team
-                                    // Player Number is unique in a team
-                                    var playerItem = await _playerRepository.GetByPlayerNumberAndTeamIdAsync(playerDto.Number, team.TeamId);
-                                    if (!playerItem.Item2)
+                                    foreach (var positionDto in teamDto.Positions)
                                     {
-                                        throw new Exception($"Input JSON file is incorrect for a Player Number {playerDto.Number}.");
-                                    }
-                                    if (playerItem.Item1 == null)
-                                    {
-                                        // A new Player
-                                        var player = new Player { Number = playerDto.Number, Name = playerDto.Name, Odds = playerDto.Odds, TeamId = team.TeamId };
-                                        await _playerRepository.AddAsync(player);
-                                        await _playerRepository.SaveChangesAsync();
-                                        playerId = player.PlayerId;
-                                    }
-                                    else
-                                    {
-                                        playerId = playerItem.Item1.PlayerId;
-                                    }
-
-                                    // Add the order
-                                    var order = new Order { SeqNumber = orderDto.SeqNumber, PlayerId = playerId, PositionId = positionId };
-                                    await _orderRepository.AddAsync(order);
-                                    await _orderRepository.SaveChangesAsync();
+                                        int positionId = -1;
+                                        // Add the Position into the team if this is a new Position under the team
+                                        // Position Name is unique in a team
+                                        var positionItem = await _positionRepository.GetByPositionNameAndTeamIdAsync(positionDto.Name, team.TeamId);
+                                        if (!positionItem.Item2)
+                                        {
+                                            throw new Exception($"Input JSON file is incorrect for a Position Name {positionDto.Name}.");
+                                        }
+                                        if (positionItem.Item1 == null)
+                                        {
+                                            // A new Position
+                                            var position = new Position { Name = positionDto.Name, TeamId = team.TeamId };
+                                            await _positionRepository.AddAsync(position);
+                                            await _positionRepository.SaveChangesAsync();
+                                            positionId = position.PositionId;
+                                        }
+                                        else
+                                        {
+                                            positionId = positionItem.Item1.PositionId;
+                                        }
+                                    }                                    
                                 }
+
+                                // Setup players of the team
+                                if (teamDto.Players != null)
+                                {
+                                    foreach (var playerDto in teamDto.Players)
+                                    {
+                                        int playerId = -1;
+                                        // Add the Players into the team if this is a new Player under the team
+                                        // Player Number is unique in a team
+                                        var playerItem = await _playerRepository.GetByPlayerNumberAndTeamIdAsync(playerDto.Number, team.TeamId);
+                                        if (!playerItem.Item2)
+                                        {
+                                            throw new Exception($"Input JSON file is incorrect for a Player Number {playerDto.Number}.");
+                                        }
+                                        if (playerItem.Item1 == null)
+                                        {
+                                            // A new Player
+                                            var player = new Player { Number = playerDto.Number, Name = playerDto.Name, Odds = playerDto.Odds, TeamId = team.TeamId };
+                                            await _playerRepository.AddAsync(player);
+                                            await _playerRepository.SaveChangesAsync();
+                                            playerId = player.PlayerId;
+                                        }
+                                        else
+                                        {
+                                            playerId = playerItem.Item1.PlayerId;
+                                        }
+                                    }
+                                }
+
+                                // Setup orders of a team
+                                if(teamDto.Orders != null)
+                                {
+                                    foreach (var orderDto in teamDto.Orders)
+                                    {
+                                        // Add the Orders into the order
+                                        // PositionId and PlayerId together makes the entry unique
+
+                                        var player = await _dbContext.Players.FirstOrDefaultAsync(x => x.TeamId == team.TeamId && 
+                                                                                            x.Number == orderDto.PlayerNumber);
+                                        var position = await _dbContext.Positions.FirstOrDefaultAsync(x => x.TeamId == team.TeamId &&
+                                                                                            x.Name == orderDto.PositionName);
+
+                                        if(player != null && position != null)
+                                        {
+                                            // Add the order
+                                            var order = new Order
+                                            {
+                                                SeqNumber = orderDto.SeqNumber,
+                                                PlayerId = player.PlayerId,
+                                                PositionId = position.PositionId
+                                            };
+                                            await _orderRepository.AddAsync(order);
+                                            await _orderRepository.SaveChangesAsync();
+                                        }
+                                        else
+                                        {
+                                            throw new Exception($"Input JSON file is incorrect for a Order under a team ID {team.TeamId}.");
+                                        }
+                                    }
+                                }                     
                             }
                         }
                     }
@@ -193,17 +229,17 @@ namespace DC.Tests
 
             // Retrieve player and check its name
             var player1 = await _playerRepository.GetByIdAsync(players[0].PlayerId);
-            Assert.AreEqual("Mike Evans", player1.Name);
+            Assert.AreEqual("Tom Brady", player1.Name);
             var player2 = await _playerRepository.GetByIdAsync(players[1].PlayerId);
-            Assert.AreEqual("Jaelon Darden", player2.Name);
+            Assert.AreEqual("Blaine Gabbert", player2.Name);
             var player3 = await _playerRepository.GetByIdAsync(players[2].PlayerId);
-            Assert.AreEqual("Scott Miller", player3.Name);
+            Assert.AreEqual("Kyle Trask", player3.Name);
             var player4 = await _playerRepository.GetByIdAsync(players[3].PlayerId);
-            Assert.AreEqual("Donovan Smith", player4.Name);
+            Assert.AreEqual("Mike Evans", player4.Name);
             var player5 = await _playerRepository.GetByIdAsync(players[4].PlayerId);
-            Assert.AreEqual("JOSH WELLS", player5.Name);
+            Assert.AreEqual("Jaelon Darden", player5.Name);
             var player6 = await _playerRepository.GetByIdAsync(players[5].PlayerId);
-            Assert.AreEqual("Tristan Wirfs", player6.Name);
+            Assert.AreEqual("Scott Miller", player6.Name);
 
             await _dbContext.DisposeAsync();
         }
@@ -215,16 +251,14 @@ namespace DC.Tests
             await SetupInitialData();
 
             var positions = await _positionRepository.GetAllAsync();
-            Assert.AreEqual(3, positions.Count); // Expect one position
+            Assert.AreEqual(2, positions.Count); // Expect one position
 
             // Retrieve position and check its name
             var position1 = await _positionRepository.GetByIdAsync(positions[0].PositionId);
-            Assert.AreEqual("LWR", position1.Name);
+            Assert.AreEqual("QB", position1.Name);
             var position2 = await _positionRepository.GetByIdAsync(positions[1].PositionId);
-            Assert.AreEqual("LT", position2.Name);
-            var position3 = await _positionRepository.GetByIdAsync(positions[2].PositionId);
-            Assert.AreEqual("RT", position3.Name);
-
+            Assert.AreEqual("LWR", position2.Name);
+            
             await _dbContext.DisposeAsync();
         }
 
@@ -236,7 +270,7 @@ namespace DC.Tests
 
             // Retrieve all orders
             var orders = await _orderRepository.GetAllAsync();
-            Assert.AreEqual(7, orders.Count); // Expect two orders
+            Assert.AreEqual(6, orders.Count); // Expect two orders
 
             // Retrieve order and check its name
             var order1 = await _orderRepository.GetByIdAsync(orders[0].PositionId, orders[0].PlayerId);
@@ -250,9 +284,7 @@ namespace DC.Tests
             var order5 = await _orderRepository.GetByIdAsync(orders[4].PositionId, orders[4].PlayerId);
             Assert.AreEqual(1, order5.SeqNumber);
             var order6 = await _orderRepository.GetByIdAsync(orders[5].PositionId, orders[5].PlayerId);
-            Assert.AreEqual(0, order6.SeqNumber);
-            var order7 = await _orderRepository.GetByIdAsync(orders[6].PositionId, orders[6].PlayerId);
-            Assert.AreEqual(1, order7.SeqNumber);
+            Assert.AreEqual(2, order6.SeqNumber);
 
             await _dbContext.DisposeAsync();
         }
