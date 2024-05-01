@@ -210,6 +210,6 @@ namespace DC.Infrastructure.Services
                 .FirstOrDefaultAsync();
 
             return (position?.PositionId, player?.PlayerId);
-        }        
+        }
     }
 }

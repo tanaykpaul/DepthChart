@@ -2,8 +2,8 @@
 {
     public class OrderDTO
     {
-        public int? SeqNumber { get; set; }
-        public int PositionId { get; set; }
-        public int PlayerId { get; set; }        
+        public required int SeqNumber { get; set; }
+        public required string PositionName { get; set; }
+        public int PlayerNumber { get; set; }
     }
 }

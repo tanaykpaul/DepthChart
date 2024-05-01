@@ -1,7 +1,11 @@
-﻿using DC.Application.DTOs;
+﻿using AutoMapper;
+using DC.Application.DTOs;
+using DC.Application.Services;
+using DC.Domain.Entities;
 using DC.Domain.Logging;
 using DC.Infrastructure.Services;
 using Microsoft.AspNetCore.Mvc;
+using System.Numerics;
 
 namespace DC.Presentation.Controllers
 {
@@ -11,12 +15,71 @@ namespace DC.Presentation.Controllers
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IAppLogger _logger;
+        private readonly IMapper _mapper;
 
-        public DepthChartController(IUnitOfWork unitOfWork, IAppLogger logger)
+        public DepthChartController(IUnitOfWork unitOfWork, IAppLogger logger, IMapper mapper)
         {
             _unitOfWork = unitOfWork;
             _logger = logger;
+            _mapper = mapper;
         }
+
+        #region New Features
+        // Add a player for a position into the depth chart (Use Case 1)
+        [HttpPost("addFullDepthChart")]
+        public async Task<ActionResult> AddFullDepthChart([FromBody] AddFullDepthChartDTO contents)
+        {
+            _logger.LogInformation($"Push a JSON object of Sport into the Depth Chart.");
+
+            var service = new STP2FromJSON(_logger, _mapper);
+            var sport = service.GetData(contents.JsonStringContents);
+            var teamIds = new List<int>();
+
+            // Add Sports Header part (Sport -> Teams -> Positions and Players
+            if (sport.Item1 != null)
+            {
+                await _unitOfWork.SportRepository.AddAsync(sport.Item1);
+                await _unitOfWork.SportRepository.SaveChangesAsync();
+                teamIds.AddRange(sport.Item1.Teams.Select(x => x.TeamId));
+            }
+            else
+            {
+                _logger.LogWarning("JSON input is invalid at Sport Level.");
+            }
+
+            // Add Oders part into the Depth Chart
+            if (sport.Item2 != null)
+            {
+                if(sport.Item2.Teams != null)
+                {
+                    int teamIdsIndex = 0;
+                    foreach (var team in sport.Item2.Teams)
+                    {
+                        if(team != null)
+                        {
+                            if(team.Orders != null)
+                            {
+                                foreach(var orderDto in team.Orders)
+                                {
+                                    if(orderDto != null)
+                                    {
+                                        await _unitOfWork.AddPlayerToDepthChart(orderDto.PositionName, orderDto.PlayerNumber, orderDto.SeqNumber, teamIds[teamIdsIndex]);
+                                    }
+                                }
+                            }                            
+                        }
+                    }
+                    teamIdsIndex++;
+                }               
+            }
+            else
+            {
+                _logger.LogWarning("JSON input is invalid at Order Level.");
+            }
+
+            return CreatedAtAction(nameof(GetFullDepthChart), "Full Depth Chart is created.");
+        }
+        #endregion
 
         #region Use Cases
         // Add a player for a position into the depth chart (Use Case 1)

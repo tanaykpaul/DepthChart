@@ -68,19 +68,19 @@ namespace DC.Presentation.Controllers
         [HttpPost("addPlayer")]
         public async Task<ActionResult<PlayerCreationResponseDTO>> AddPlayer([FromBody] PlayerDTO playerDto)
         {
-            var playerItem = await _playerRepository.GetByPlayerNumberAndTeamIdAsync(playerDto.PlayerNumber, playerDto.TeamId);
+            var playerItem = await _playerRepository.GetByPlayerNumberAndTeamIdAsync(playerDto.Number, playerDto.TeamId);
             if (!playerItem.Item2)
             {
                 return BadRequest($"There is no team item is crreated yet by TeamId = {playerDto.TeamId}.");
             }
             if (playerItem.Item1 != null)
             {
-                return BadRequest($"There is a player exists with the player number {playerDto.PlayerNumber} under the team Id = {playerDto.TeamId}");
+                return BadRequest($"There is a player exists with the player number {playerDto.Number} under the team Id = {playerDto.TeamId}");
             }
 
             var player = new Player
             {
-                Number = playerDto.PlayerNumber,
+                Number = playerDto.Number,
                 Name = playerDto.Name,
                 Odds = playerDto.Odds,
                 TeamId = playerDto.TeamId
@@ -104,7 +104,7 @@ namespace DC.Presentation.Controllers
             }
 
             player.Name = updatedPlayer.Name;
-            player.Number = updatedPlayer.PlayerNumber;
+            player.Number = updatedPlayer.Number;
             player.Odds = updatedPlayer.Odds;
 
             await _playerRepository.UpdateAsync(player);
