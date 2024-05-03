@@ -1,11 +1,9 @@
 ﻿using AutoMapper;
 using DC.Application.DTOs;
 using DC.Application.Services;
-using DC.Domain.Entities;
 using DC.Domain.Logging;
 using DC.Infrastructure.Services;
 using Microsoft.AspNetCore.Mvc;
-using System.Numerics;
 
 namespace DC.Presentation.Controllers
 {
@@ -38,8 +36,8 @@ namespace DC.Presentation.Controllers
             // Add Sports Header part (Sport -> Teams -> Positions and Players
             if (sport.Item1 != null)
             {
-                await _unitOfWork.SportRepository.AddAsync(sport.Item1);
-                await _unitOfWork.SportRepository.SaveChangesAsync();
+                await _unitOfWork.AddSportAsync(sport.Item1);
+                await _unitOfWork.SaveChangesAsync();
                 teamIds.AddRange(sport.Item1.Teams.Select(x => x.TeamId));
             }
             else

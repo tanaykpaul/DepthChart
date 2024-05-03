@@ -1,7 +1,7 @@
-﻿using DC.Domain.Interfaces;
+﻿using DC.Domain.Entities;
+using DC.Domain.Interfaces;
 using DC.Domain.Logging;
 using DC.Infrastructure.Data;
-using DC.Infrastructure.Repositories;
 using Microsoft.EntityFrameworkCore;
 
 namespace DC.Infrastructure.Services
@@ -9,49 +9,27 @@ namespace DC.Infrastructure.Services
     public class UnitOfWork : IUnitOfWork
     {
         private readonly DepthChartDbContext _dbContext;
+        private readonly ISportRepository _sportRepository;
+        private readonly IOrderRepository _orderRepository;
         private readonly IAppLogger _logger;
         private bool _disposed;
 
-        public UnitOfWork(DepthChartDbContext dbContext, IAppLogger logger)
+        public UnitOfWork(DepthChartDbContext dbContext, IAppLogger logger, ISportRepository sportRepository, IOrderRepository orderRepository)
         {
             _dbContext = dbContext;
             _logger = logger;
+            _sportRepository = sportRepository;
+            _orderRepository = orderRepository;
         }
-
-        // Lazy initialization of repositories
-        private ISportRepository _sportRepository;
-        private ITeamRepository _teamRepository;
-        private IPositionRepository _positionRepository;
-        private IPlayerRepository _playerRepository;
-        private IOrderRepository _orderRepository;
-
-        public ISportRepository SportRepository => _sportRepository ??= new SportRepository(_dbContext, _logger);
-        public ITeamRepository TeamRepository => _teamRepository ??= new TeamRepository(_dbContext, _logger);
-        public IPositionRepository PositionRepository => _positionRepository ??= new PositionRepository(_dbContext, _logger);
-        public IPlayerRepository PlayerRepository => _playerRepository ??= new PlayerRepository(_dbContext, _logger);
-        public IOrderRepository OrderRepository => _orderRepository ??= new OrderRepository(_dbContext, _logger);
 
         public async Task<int> SaveChangesAsync()
         {
             return await _dbContext.SaveChangesAsync();
         }
 
-        protected virtual void Dispose(bool disposing)
+        public async Task AddSportAsync(Sport sport)
         {
-            if (!_disposed)
-            {
-                if (disposing)
-                {
-                    _dbContext?.Dispose();
-                }
-                _disposed = true;
-            }
-        }
-
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
+            await _sportRepository.AddAsync(sport);
         }
 
         /// <summary>
@@ -71,8 +49,8 @@ namespace DC.Infrastructure.Services
                 var positionIdAndPlayerId = await GetPositionIdAndPlayerId(positionName, playerNumber, teamId);
                 if(positionIdAndPlayerId.Item1 != null && positionIdAndPlayerId.Item2 != null)
                 {
-                    await OrderRepository.AddPlayerToDepthChart(positionIdAndPlayerId.Item1.Value, positionIdAndPlayerId.Item2.Value, depthPosition);
-                    await OrderRepository.SaveChangesAsync();                    
+                    await _orderRepository.AddPlayerToDepthChart(positionIdAndPlayerId.Item1.Value, positionIdAndPlayerId.Item2.Value, depthPosition);
+                    await _orderRepository.SaveChangesAsync();                    
                 }
             }
         }
@@ -95,8 +73,8 @@ namespace DC.Infrastructure.Services
                 var positionIdAndPlayerId = await GetPositionIdAndPlayerId(positionName, playerNumber, teamId);
                 if (positionIdAndPlayerId.Item1 != null && positionIdAndPlayerId.Item2 != null)
                 {
-                    bool isRemoved = await OrderRepository.RemovePlayerFromDepthChart(positionIdAndPlayerId.Item1.Value, positionIdAndPlayerId.Item2.Value);
-                    await OrderRepository.SaveChangesAsync();
+                    bool isRemoved = await _orderRepository.RemovePlayerFromDepthChart(positionIdAndPlayerId.Item1.Value, positionIdAndPlayerId.Item2.Value);
+                    await _orderRepository.SaveChangesAsync();
                     if(isRemoved)
                     {
                         var player = await _dbContext.Players.FindAsync(positionIdAndPlayerId.Item2.Value);
@@ -126,7 +104,7 @@ namespace DC.Infrastructure.Services
                 var positionIdAndPlayerId = await GetPositionIdAndPlayerId(positionName, playerNumber, teamId);
                 if (positionIdAndPlayerId.Item1 != null && positionIdAndPlayerId.Item2 != null)
                 {
-                    var order = await OrderRepository.GetByIdAsync(positionIdAndPlayerId.Item1.Value, positionIdAndPlayerId.Item2.Value);
+                    var order = await _orderRepository.GetByIdAsync(positionIdAndPlayerId.Item1.Value, positionIdAndPlayerId.Item2.Value);
                     if (order != null)
                     {
                         // Business Rule 1: For a given player and position, return all players that are “Backups”, those with a lower position_depth
