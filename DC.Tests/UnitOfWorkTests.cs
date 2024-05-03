@@ -4,9 +4,11 @@ using DC.Application.Services;
 using DC.Domain.Entities;
 using DC.Domain.Logging;
 using DC.Infrastructure.Data;
+using DC.Infrastructure.Repositories;
 using DC.Infrastructure.Services;
 using Microsoft.EntityFrameworkCore;
 using Moq;
+using System.Net.Sockets;
 
 namespace DC.Tests
 {
@@ -17,6 +19,11 @@ namespace DC.Tests
         private UnitOfWork _unitOfWork;
         private Mock<IAppLogger> _mockLogger;
         private IMapper _mockMapper;
+
+        private SportRepository _sportRepository;
+        private OrderRepository _orderRepository;
+        private Mock<IAppLogger> _mockSportLogger;
+        private Mock<IAppLogger> _mockOrderLogger;
 
         [TestInitialize]
         public void Setup()
@@ -30,8 +37,15 @@ namespace DC.Tests
             _dbContext.Database.EnsureDeletedAsync();
             _dbContext.Database.EnsureCreatedAsync();
 
+            // Initialize repositories and mocked loggers
+            _mockSportLogger = new Mock<IAppLogger>();
+            _mockOrderLogger = new Mock<IAppLogger>();
+
+            _sportRepository = new SportRepository(_dbContext, _mockSportLogger.Object);
+            _orderRepository = new OrderRepository(_dbContext, _mockOrderLogger.Object);
+
             _mockLogger = new Mock<IAppLogger>();
-            _unitOfWork = new UnitOfWork(_dbContext, _mockLogger.Object);
+            _unitOfWork = new UnitOfWork(_dbContext, _mockLogger.Object, _sportRepository, _orderRepository);
 
             // Configure AutoMapper with the MappingProfile
             var config = new MapperConfiguration(cfg =>
@@ -39,17 +53,6 @@ namespace DC.Tests
                 cfg.AddProfile<MappingProfile>();
             });
             _mockMapper = config.CreateMapper();
-        }
-
-        [TestMethod]
-        public void Repositories_AreAccessibleAndNotNull()
-        {
-            // Assert that the repositories are accessible and not null
-            Assert.IsNotNull(_unitOfWork.SportRepository);
-            Assert.IsNotNull(_unitOfWork.TeamRepository);
-            Assert.IsNotNull(_unitOfWork.PositionRepository);
-            Assert.IsNotNull(_unitOfWork.PlayerRepository);
-            Assert.IsNotNull(_unitOfWork.OrderRepository);
         }
 
         [TestMethod]
@@ -243,8 +246,8 @@ namespace DC.Tests
             Assert.IsNotNull(sport.Item2.Teams);
             Assert.AreEqual(1, sport.Item2.Teams.Count());
 
-            await _unitOfWork.SportRepository.AddAsync(sport.Item1);
-            await _unitOfWork.SportRepository.SaveChangesAsync();
+            await _unitOfWork.AddSportAsync(sport.Item1);
+            await _unitOfWork.SaveChangesAsync();
 
             var ordersDTO = sport.Item2.Teams.First().Orders;
             var teamId = sport.Item1.Teams.First().TeamId;

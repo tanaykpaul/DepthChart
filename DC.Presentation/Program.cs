@@ -5,9 +5,7 @@ using DC.Infrastructure.Data;
 using DC.Infrastructure.Logging;
 using DC.Infrastructure.Repositories;
 using DC.Infrastructure.Services;
-using DC.Presentation.Controllers;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
 using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);

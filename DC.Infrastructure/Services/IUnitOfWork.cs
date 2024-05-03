@@ -1,16 +1,9 @@
 ﻿using DC.Domain.Entities;
-using DC.Domain.Interfaces;
 
 namespace DC.Infrastructure.Services
 {
-    public interface IUnitOfWork : IDisposable
+    public interface IUnitOfWork
     {
-        ISportRepository SportRepository { get; }
-        ITeamRepository TeamRepository { get; }
-        IPositionRepository PositionRepository { get; }
-        IPlayerRepository PlayerRepository { get; }
-        IOrderRepository OrderRepository { get; }
-
         Task<int> SaveChangesAsync();
 
         // Use case 1: Add a player to the Depth Chart
@@ -24,5 +17,7 @@ namespace DC.Infrastructure.Services
 
         // Use case 4: Get the full Depth Chart
         Task<IDictionary<string, List<(int, string)>>> GetFullDepthChart(int teamId = 1);
+
+        Task AddSportAsync(Sport sport);
     }
 }
