@@ -34,6 +34,8 @@ The solution needs to be scalable to add more Sports - MLB, NHL, NBA etc. as wel
 4. getFullDepthChart()
     - Print out the full depth chart with every position on the team and every player within the Depth Chart
 
+Furthermore, this solution must show a direction to enter an existing Depth chart.
+
 ### Some Sample Inputs / Outputs
 #### Create 6 players for 2 positions ("QB" and "LWR")
 1. var TomBrady = { "number": 12, "name": "Tom Brady" }
@@ -111,7 +113,7 @@ As per the Clean architecture guidelines, I have created 5 projects for the solu
 7. I have use Moq in the Test project
 8. I have applied SOLID principles including Dependency injection etc.
 
-If you want to push an existing Depth Chart into the Database (hence, DepthChartDbContext under the DC.Infrastructure -> Data), you can a JSON file (to see the structure open the DepthChart.json file in JsonInput folder under the DC.Tests project). To enter the data from the JSON file into your database, see the SetupInitialData() method of the DepthChartFromJsonTests.cs under the DC.Tests project.
+This solution allows to push an existing Depth Chart into the Database (hence, DepthChartDbContext under the DC.Infrastructure -> Data). To enter an existing Depth Chart into the database, see the SetupInitialData() method of the DepthChartFromJsonTests.cs under the DC.Tests project. A sample JSON file (namely, DepthChart.json) is attached into the JsonInput folder under the DC.Tests project. Furthermore, a POST Action, namely, "addFullDepthChart" under DepthChartController is implemented that accepts a JSON string value (see the Two_Position_Six_Players.txt file in the DC.Presentation project).
  
 ## Assumptions
 1. To experiment the use cases, (a) first, create a Sport (only use Name -> "NFL") entry from SportController (output -> SportId) or use AddAsync method from the SportRepository.cs (b) then, create a Team entry using Name -> "Tampa Bay Buccaneers" and SportId (from the previous step); output is TeamId, (c) then, create a Postion entry using Name -> "QB" and TeamId, and finally (d) create a Player entry using Number -> 12, Name -> Tom Brady and TeamId.
